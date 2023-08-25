@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
-#if FEATURE_SECURITY_PERMISSIONS
-using System.Security.Permissions;
-#endif
-using System.Diagnostics.CodeAnalysis;
 using System.Security;
-using Microsoft.Build.Shared;
 using Microsoft.Build.Internal;
+using Microsoft.Build.Shared;
 
 /*
     ==================================================================================================================
@@ -39,11 +36,13 @@ using Microsoft.Build.Internal;
     ==================================================================================================================
 */
 
+#nullable disable
+
 namespace Microsoft.Build.Collections
 {
     /// <summary>
     /// Implementation notes:
-    /// This uses an array-based implementation similar to <see cref="T:Dictionary{T}" />, using a buckets array
+    /// This uses an array-based implementation similar to <see cref="Dictionary{TKey, TValue}" />, using a buckets array
     /// to map hash values to the Slots array. Items in the Slots array that hash to the same value
     /// are chained together through the "next" indices. 
     /// 
@@ -91,8 +90,10 @@ namespace Microsoft.Build.Collections
     {
         // store lower 31 bits of hash code
         private const int Lower31BitMask = 0x7FFFFFFF;
+#if NEVER
         // cutoff point, above which we won't do stackallocs. This corresponds to 100 integers.
         private const int StackAllocThreshold = 100;
+#endif
         // when constructing a hashset from an existing collection, it may contain duplicates, 
         // so this is used as the max acceptable excess ratio of capacity to count. Note that
         // this is only used on the ctor and not to automatically shrink if the hashset has, e.g,
@@ -341,14 +342,20 @@ namespace Microsoft.Build.Collections
         public T Get(string key, int index, int length)
         {
             if (length < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(length));
+            }
 
             if (index < 0 || index > (key == null ? 0 : key.Length) - length)
+            {
                 throw new ArgumentOutOfRangeException(nameof(index));
+            }
 
             if (_constrainedComparer == null)
+            {
                 throw new InvalidOperationException("Cannot do a constrained lookup on this collection.");
-        
+            }
+
             return GetCore(key, index, length);
         }
 
@@ -594,7 +601,9 @@ namespace Microsoft.Build.Collections
         void IDictionary<string, T>.Add(string key, T item)
         {
             if (key != item.Key)
+            {
                 throw new InvalidOperationException();
+            }
 
             AddEvenIfPresent(item);
         }
@@ -628,7 +637,7 @@ namespace Microsoft.Build.Collections
             }
         }
 
-#if NEVER 
+#if NEVER
                                                                                                                                                         /// <summary>
                                                                                                                                                         /// Takes the intersection of this set with other. Modifies this set.
                                                                                                                                                         /// 
@@ -987,7 +996,9 @@ namespace Microsoft.Build.Collections
         void ICollection<KeyValuePair<string, T>>.CopyTo(KeyValuePair<string, T>[] array, int index)
         {
             if (index < 0 || Count > array.Length - index)
+            {
                 throw new ArgumentException("index");
+            }
 
             int i = index;
             foreach (var entry in this)
@@ -1697,12 +1708,14 @@ namespace Microsoft.Build.Collections
                                                                                                                                                                 return set1.Comparer.Equals(set2.Comparer);
         }
 #endif
-       
+
         private int InternalGetHashCode(string item, int index, int length)
         {
             // No need to check for null 'item' as we own all comparers
             if (_constrainedComparer != null)
+            {
                 return _constrainedComparer.GetHashCode(item, index, length) & Lower31BitMask;
+            }
 
             return InternalGetHashCode(item);
         }

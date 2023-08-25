@@ -1,23 +1,25 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using Microsoft.Build.BackEnd;
+using Microsoft.Build.BackEnd.Components.Caching;
 using Microsoft.Build.BackEnd.Logging;
+using Microsoft.Build.BackEnd.SdkResolution;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Shared;
 using Microsoft.Build.Internal;
-using Microsoft.Build.BackEnd.Components.Caching;
-using Microsoft.Build.BackEnd.SdkResolution;
+using Microsoft.Build.Shared;
 using SdkResult = Microsoft.Build.BackEnd.SdkResolution.SdkResult;
+
+#nullable disable
 
 namespace Microsoft.Build.Execution
 {
@@ -119,11 +121,6 @@ namespace Microsoft.Build.Execution
         private Exception _shutdownException;
 
         /// <summary>
-        /// Flag indicating if we should debug communications or not.
-        /// </summary>
-        private readonly bool _debugCommunications;
-
-        /// <summary>
         /// Data for the use of LegacyThreading semantics.
         /// </summary>
         private readonly LegacyThreadingData _legacyThreadingData;
@@ -140,8 +137,6 @@ namespace Microsoft.Build.Execution
         {
             s_isOutOfProcNode = true;
 
-            _debugCommunications = (Environment.GetEnvironmentVariable("MSBUILDDEBUGCOMM") == "1");
-
             _receivedPackets = new ConcurrentQueue<INodePacket>();
             _packetReceivedEvent = new AutoResetEvent(false);
             _shutdownEvent = new ManualResetEvent(false);
@@ -149,6 +144,7 @@ namespace Microsoft.Build.Execution
 
             _componentFactories = new BuildComponentFactoryCollection(this);
             _componentFactories.RegisterDefaultFactories();
+            SerializationContractInitializer.Initialize();
             _packetFactory = new NodePacketFactory();
 
             _buildRequestEngine = (this as IBuildComponentHost).GetComponent(BuildComponentType.RequestEngine) as IBuildRequestEngine;
@@ -158,7 +154,7 @@ namespace Microsoft.Build.Execution
             // Create a factory for the out-of-proc SDK resolver service which can pass our SendPacket delegate to be used for sending packets to the main node
             OutOfProcNodeSdkResolverServiceFactory sdkResolverServiceFactory = new OutOfProcNodeSdkResolverServiceFactory(SendPacket);
 
-            ((IBuildComponentHost) this).RegisterFactory(BuildComponentType.SdkResolverService, sdkResolverServiceFactory.CreateInstance);
+            ((IBuildComponentHost)this).RegisterFactory(BuildComponentType.SdkResolverService, sdkResolverServiceFactory.CreateInstance);
 
             _sdkResolverService = (this as IBuildComponentHost).GetComponent(BuildComponentType.SdkResolverService) as ISdkResolverService;
 
@@ -245,10 +241,7 @@ namespace Microsoft.Build.Execution
         /// <returns>The reason for shutting down.</returns>
         public NodeEngineShutdownReason Run(bool enableReuse, bool lowPriority, out Exception shutdownException)
         {
-            // Console.WriteLine("Run called at {0}", DateTime.Now);
-            string pipeName = NamedPipeUtil.GetPipeNameOrPath("MSBuild" + Process.GetCurrentProcess().Id);
-
-            _nodeEndpoint = new NodeEndpointOutOfProc(pipeName, this, enableReuse, lowPriority);
+            _nodeEndpoint = new NodeEndpointOutOfProc(enableReuse, lowPriority);
             _nodeEndpoint.OnLinkStatusChanged += OnLinkStatusChanged;
             _nodeEndpoint.Listen(this);
 
@@ -766,13 +759,8 @@ namespace Microsoft.Build.Execution
                     _loggingService.InitializeNodeLoggers(configuration.LoggerDescriptions, sink, configuration.NodeId);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ExceptionHandling.IsCriticalException(ex))
             {
-                if (ExceptionHandling.IsCriticalException(ex))
-                {
-                    throw;
-                }
-
                 OnEngineException(ex);
             }
 
@@ -821,6 +809,32 @@ namespace Microsoft.Build.Execution
         private void HandleNodeBuildComplete(NodeBuildComplete buildComplete)
         {
             _shutdownReason = buildComplete.PrepareForReuse ? NodeEngineShutdownReason.BuildCompleteReuse : NodeEngineShutdownReason.BuildComplete;
+            if (_shutdownReason == NodeEngineShutdownReason.BuildCompleteReuse)
+            {
+                ProcessPriorityClass priorityClass = Process.GetCurrentProcess().PriorityClass;
+                if (priorityClass != ProcessPriorityClass.Normal && priorityClass != ProcessPriorityClass.BelowNormal)
+                {
+                    // This isn't a priority class known by MSBuild. We should avoid connecting to this node.
+                    _shutdownReason = NodeEngineShutdownReason.BuildComplete;
+                }
+                else
+                {
+                    bool lowPriority = priorityClass == ProcessPriorityClass.BelowNormal;
+                    if (_nodeEndpoint.LowPriority != lowPriority)
+                    {
+                        if (!lowPriority || NativeMethodsShared.IsWindows)
+                        {
+                            Process.GetCurrentProcess().PriorityClass = lowPriority ? ProcessPriorityClass.Normal : ProcessPriorityClass.BelowNormal;
+                        }
+                        else
+                        {
+                            // On *nix, we can't adjust the priority up, so to avoid using this node at the wrong priority, we should not be reused.
+                            _shutdownReason = NodeEngineShutdownReason.BuildComplete;
+                        }
+                    }
+                }
+            }
+
             _shutdownEvent.Set();
         }
     }

@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -12,6 +12,8 @@ using Microsoft.Build.Collections;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Framework.Profiler;
 using Microsoft.Build.Shared;
+
+#nullable disable
 
 namespace Microsoft.Build.Logging
 {
@@ -51,13 +53,11 @@ namespace Microsoft.Build.Logging
             typeof(BuildEventArgs).GetField("threadId", BindingFlags.Instance | BindingFlags.NonPublic);
         private static FieldInfo buildEventArgsFieldSenderName =
             typeof(BuildEventArgs).GetField("senderName", BindingFlags.Instance | BindingFlags.NonPublic);
-        private static FieldInfo buildEventArgsFieldTimestamp =
-            typeof(BuildEventArgs).GetField("timestamp", BindingFlags.Instance | BindingFlags.NonPublic);
 
         /// <summary>
-        /// Initializes a new instance of BuildEventArgsReader using a BinaryReader instance
+        /// Initializes a new instance of <see cref="BuildEventArgsReader"/> using a <see cref="BinaryReader"/> instance.
         /// </summary>
-        /// <param name="binaryReader">The BinaryReader to read BuildEventArgs from</param>
+        /// <param name="binaryReader">The <see cref="BinaryReader"/> to read <see cref="BuildEventArgs"/> from.</param>
         /// <param name="fileFormatVersion">The file format version of the log file being read.</param>
         public BuildEventArgsReader(BinaryReader binaryReader, int fileFormatVersion)
         {
@@ -81,8 +81,12 @@ namespace Microsoft.Build.Logging
         internal event Action<BinaryLogRecordKind, byte[]> OnBlobRead;
 
         /// <summary>
-        /// Reads the next log record from the binary reader. If there are no more records, returns null.
+        /// Reads the next log record from the <see cref="BinaryReader"/>.
         /// </summary>
+        /// <returns>
+        /// The next <see cref="BuildEventArgs"/>.
+        /// If there are no more records, returns <see langword="null"/>.
+        /// </returns>
         public BuildEventArgs Read()
         {
             BinaryLogRecordKind recordKind = (BinaryLogRecordKind)ReadInt32();
@@ -172,6 +176,9 @@ namespace Microsoft.Build.Logging
                 case BinaryLogRecordKind.EnvironmentVariableRead:
                     result = ReadEnvironmentVariableReadEventArgs();
                     break;
+                case BinaryLogRecordKind.ResponseFileUsed:
+                    result = ReadResponseFileUsedEventArgs();
+                    break;
                 case BinaryLogRecordKind.PropertyReassignment:
                     result = ReadPropertyReassignmentEventArgs();
                     break;
@@ -180,6 +187,9 @@ namespace Microsoft.Build.Logging
                     break;
                 case BinaryLogRecordKind.PropertyInitialValueSet:
                     result = ReadPropertyInitialValueSetEventArgs();
+                    break;
+                case BinaryLogRecordKind.AssemblyLoad:
+                    result = ReadAssemblyLoadEventArgs();
                     break;
                 default:
                     break;
@@ -297,14 +307,29 @@ namespace Microsoft.Build.Logging
             string condition = null;
             string evaluatedCondition = null;
             bool originallySucceeded = false;
+            TargetSkipReason skipReason = TargetSkipReason.None;
+            BuildEventContext originalBuildEventContext = null;
             if (fileFormatVersion >= 13)
             {
                 condition = ReadOptionalString();
                 evaluatedCondition = ReadOptionalString();
                 originallySucceeded = ReadBoolean();
+
+                // Attempt to infer skip reason from the data we have
+                skipReason = condition != null ?
+                    TargetSkipReason.ConditionWasFalse // condition expression only stored when false
+                    : originallySucceeded ?
+                        TargetSkipReason.PreviouslyBuiltSuccessfully
+                        : TargetSkipReason.PreviouslyBuiltUnsuccessfully;
             }
 
             var buildReason = (TargetBuiltReason)ReadInt32();
+
+            if (fileFormatVersion >= 14)
+            {
+                skipReason = (TargetSkipReason)ReadInt32();
+                originalBuildEventContext = binaryReader.ReadOptionalBuildEventContext();
+            }
 
             var e = new TargetSkippedEventArgs(
                 fields.Message,
@@ -320,6 +345,8 @@ namespace Microsoft.Build.Logging
             e.Condition = condition;
             e.EvaluatedCondition = evaluatedCondition;
             e.OriginallySucceeded = originallySucceeded;
+            e.SkipReason = skipReason;
+            e.OriginalBuildEventContext = originalBuildEventContext;
 
             return e;
         }
@@ -535,6 +562,8 @@ namespace Microsoft.Build.Logging
                 taskFile,
                 taskName,
                 fields.Timestamp);
+            e.LineNumber = fields.LineNumber;
+            e.ColumnNumber = fields.ColumnNumber;
             SetCommonFields(e, fields);
             return e;
         }
@@ -658,7 +687,9 @@ namespace Microsoft.Build.Logging
                 itemType,
                 items,
                 logItemMetadata: true,
-                fields.Timestamp);
+                fields.Timestamp,
+                fields.LineNumber,
+                fields.ColumnNumber);
             e.ProjectFile = fields.ProjectFile;
             return e;
         }
@@ -697,6 +728,16 @@ namespace Microsoft.Build.Logging
                 fields.HelpKeyword,
                 fields.SenderName,
                 fields.Importance);
+            SetCommonFields(e, fields);
+
+            return e;
+        }
+
+        private BuildEventArgs ReadResponseFileUsedEventArgs()
+        {
+            var fields = ReadBuildEventArgsFields();
+            var responseFilePath = ReadDeduplicatedString();
+            var e = new ResponseFileUsedEventArgs(responseFilePath);
             SetCommonFields(e, fields);
 
             return e;
@@ -757,6 +798,29 @@ namespace Microsoft.Build.Logging
                 fields.HelpKeyword,
                 fields.SenderName,
                 fields.Importance);
+            SetCommonFields(e, fields);
+
+            return e;
+        }
+
+        private AssemblyLoadBuildEventArgs ReadAssemblyLoadEventArgs()
+        {
+            var fields = ReadBuildEventArgsFields(readImportance: false);
+
+            AssemblyLoadingContext context = (AssemblyLoadingContext)ReadInt32();
+            string loadingInitiator = ReadDeduplicatedString();
+            string assemblyName = ReadDeduplicatedString();
+            string assemblyPath = ReadDeduplicatedString();
+            Guid mvid = ReadGuid();
+            string appDomainName = ReadDeduplicatedString();
+
+            var e = new AssemblyLoadBuildEventArgs(
+                context,
+                loadingInitiator,
+                assemblyName,
+                assemblyPath,
+                mvid,
+                appDomainName);
             SetCommonFields(e, fields);
 
             return e;
@@ -1165,6 +1229,11 @@ namespace Microsoft.Build.Logging
         private bool ReadBoolean()
         {
             return binaryReader.ReadBoolean();
+        }
+
+        private unsafe Guid ReadGuid()
+        {
+            return new Guid(binaryReader.ReadBytes(sizeof(Guid)));
         }
 
         private DateTime ReadDateTime()

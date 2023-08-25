@@ -10,33 +10,70 @@ trigger:
 #   SignType: real
 #   SkipApplyOptimizationData: false
 
+parameters:
+- name: OptProfDropName
+  displayName: Optional OptProfDrop Override
+  type: string
+  default: 'default'
+
 variables:
+  # if OptProfDrop is not set, string '$(OptProfDrop)' will be passed to the build script.
+  - name: OptProfDrop
+    value: ''
   - name: SourceBranch
     value: $(IbcSourceBranchName)
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/exp/') }}:
+  # If we're not on a vs* branch, use main as our optprof collection branch
+  - ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/vs')) }}:
     - name: SourceBranch
       value: main
+  # if OptProfDropName is set as a parameter, set OptProfDrop to the parameter and unset SourceBranch
+  - ${{ if ne(parameters.OptProfDropName, 'default') }}:
+    - name: OptProfDrop
+      value: ${{parameters.OptProfDropName}}
+    - name: SourceBranch
+      value: ''
   - name: _DotNetArtifactsCategory
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
+  - name: EnableReleaseOneLocBuild
+    value: true
+  - name: Codeql.Enabled
+    value: true
 
 stages:
 - stage: build
   displayName: Build
 
   jobs:
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/vs16.11') }}: # should track next-release's active dev branch
-    - template: /eng/common/templates/job/onelocbuild.yml
-      parameters:
-        LclSource: lclFilesfromPackage
-        LclPackageId: 'LCL-JUNO-PROD-MSBUILD'
-        MirrorRepo: 'msbuild'
-        MirrorBranch: 'vs16.11' # should match condition above
+  - ${{ if and( ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    # The localization setup for release/ branches. Note difference in LclPackageId. main branch is handled separately below.
+    # Used for vs17.2, vs17.4, vs17.6 etc. branches only.
+    # When the branch is setup for localization (the localization ticket needs to be created - https://aka.ms/ceChangeLocConfig, requesting change from one release branch to another),
+    #  set 'EnableReleaseOneLocBuild' to true.
+    - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/vs') }}:
+      - template: /eng/common/templates/job/onelocbuild.yml
+        parameters:
+          MirrorRepo: 'msbuild'
+          LclSource: lclFilesfromPackage
+          LclPackageId: 'LCL-JUNO-PROD-MSBUILDREL'
+          MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
+          JobNameSuffix: '_release'
+          condition: ${{ variables.EnableReleaseOneLocBuild }}
+    # The localization setup for main branch. Note difference in package ID. Should not be used with release/ branches.
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - template: /eng/common/templates/job/onelocbuild.yml
+        parameters:
+          MirrorRepo: 'msbuild'
+          LclSource: lclFilesfromPackage
+          LclPackageId: 'LCL-JUNO-PROD-MSBUILD'
+          MirrorBranch: 'main'
+          JobNameSuffix: '_main'
+          condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
 
   - job: Windows_NT
     pool:
-      name: VSEngSS-MicroBuild2019
+      name: VSEngSS-MicroBuild2022-1ES
       demands:
       - agent.os -equals Windows_NT
 
@@ -49,9 +86,9 @@ stages:
     - name: TeamName
       value: MSBuild
     - name: VisualStudio.MajorVersion
-      value: 16
+      value: 17
     - name: VisualStudio.ChannelName
-      value: 'int.d16.11'
+      value: 'int.main'
     - name: VisualStudio.DropName
       value: Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)
 
@@ -74,17 +111,17 @@ stages:
         signType: $(SignType)
         zipSources: false
       condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
-      
+
     - task: MicroBuildOptProfPlugin@6
       inputs:
         ProfilingInputsDropName: '$(VisualStudio.DropName)'
         ShouldSkipOptimize: true
         AccessToken: '$(System.AccessToken)'
         feedSource: 'https://devdiv.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json'
-      displayName: 'Install OptProf Plugin'      
+      displayName: 'Install OptProf Plugin'
 
     # Required by MicroBuildBuildVSBootstrapper
-    - task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
+    - task: MicroBuildSwixPlugin@4
       inputs:
         dropName: $(VisualStudio.DropName)
 
@@ -105,9 +142,13 @@ stages:
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                 /p:TeamName=MSBuild
                 /p:DotNetPublishUsingPipelines=true
-                /p:VisualStudioIbcDrop=$(OptProfDropName)
+                /p:VisualStudioIbcDrop=$(OptProfDrop)
+                /p:GenerateSbom=true
       displayName: Build
       condition: succeeded()
+
+    # Required by Microsoft policy
+    - template: eng\common\templates\steps\generate-sbom.yml
 
     # Publish OptProf configuration files
     - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
@@ -122,12 +163,13 @@ stages:
 
     # Build VS bootstrapper
     # Generates $(Build.StagingDirectory)\MicroBuild\Output\BootstrapperInfo.json
-    - task: ms-vseng.MicroBuildTasks.0e9d0d4d-71ec-4e4e-ae40-db9896f1ae74.MicroBuildBuildVSBootstrapper@2
+    - task: MicroBuildBuildVSBootstrapper@3
       inputs:
         vsMajorVersion: $(VisualStudio.MajorVersion)
         channelName: $(VisualStudio.ChannelName)
         manifests: $(VisualStudio.SetupManifestList)
         outputFolder: '$(Build.SourcesDirectory)\artifacts\VSSetup\$(BuildConfiguration)\Insertion'
+        bootstrapperCoreVersion:
       displayName: 'OptProf - Build VS bootstrapper'
       condition: succeeded()
 
@@ -139,6 +181,7 @@ stages:
                   -task VisualStudio.BuildIbcTrainingSettings
                   /p:VisualStudioDropName=$(VisualStudio.DropName)
                   /p:BootstrapperInfoPath=$(Build.StagingDirectory)\MicroBuild\Output\BootstrapperInfo.json
+                  /p:VisualStudioIbcTrainingSettingsPath=$(Build.SourcesDirectory)\eng\config\OptProf.runsettings
       displayName: 'OptProf - Build IBC training settings'
       condition: succeeded()
 
@@ -222,6 +265,19 @@ stages:
     - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
       displayName: Execute cleanup tasks
       condition: succeededOrFailed()
+      
+    - template: /eng/common/templates/steps/component-governance.yml
+      parameters:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/vs'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+          disableComponentGovernance: false
+        ${{ else }}:
+          disableComponentGovernance: true
+
+  - template: /eng/common/templates/job/source-build.yml
+    parameters:
+      platform:
+        name: 'Managed'
+        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7'
 
   - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
@@ -229,8 +285,9 @@ stages:
       publishUsingPipelines: true
       dependsOn:
         - Windows_NT
+        - Source_Build_Managed
       pool:
-        vmImage: vs2017-win2016
+        vmImage: windows-latest
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: eng\common\templates\post-build\post-build.yml

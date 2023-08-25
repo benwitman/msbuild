@@ -1,12 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Shared;
+
+#nullable disable
 
 namespace Microsoft.Build.BackEnd
 {
@@ -222,8 +224,7 @@ namespace Microsoft.Build.BackEnd
         {
             lock (_resultsByConfiguration)
             {
-                BuildResult removedResult;
-                _resultsByConfiguration.TryRemove(configurationId, out removedResult);
+                _resultsByConfiguration.TryRemove(configurationId, out BuildResult removedResult);
 
                 removedResult?.ClearCachedFiles();
             }
@@ -241,7 +242,7 @@ namespace Microsoft.Build.BackEnd
 
             if (translator.Mode == TranslationDirection.ReadFromStream)
             {
-                _resultsByConfiguration = (ConcurrentDictionary<int, BuildResult>) localReference;
+                _resultsByConfiguration = (ConcurrentDictionary<int, BuildResult>)localReference;
             }
         }
 

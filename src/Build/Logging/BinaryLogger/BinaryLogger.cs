@@ -1,9 +1,13 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.IO;
 using System.IO.Compression;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
-using Microsoft.Build.Utilities;
+
+#nullable disable
 
 namespace Microsoft.Build.Logging
 {
@@ -48,7 +52,14 @@ namespace Microsoft.Build.Logging
         // version 13:
         //   - don't log Message where it can be recovered
         //   - log arguments for LazyFormattedBuildEventArgs
-        internal const int FileFormatVersion = 13;
+        //   - TargetSkippedEventArgs: added OriginallySucceeded, Condition, EvaluatedCondition
+        // version 14:
+        //   - TargetSkippedEventArgs: added SkipReason, OriginalBuildEventContext
+        // version 15:
+        //   - new record kind: ResponseFileUsedEventArgs
+        // version 16:
+        //   - AssemblyLoadBuildEventArgs
+        internal const int FileFormatVersion = 16;
 
         private Stream stream;
         private BinaryWriter binaryWriter;
@@ -56,6 +67,7 @@ namespace Microsoft.Build.Logging
         private ProjectImportsCollector projectImportsCollector;
         private string _initialTargetOutputLogging;
         private bool _initialLogImports;
+        private string _initialIsBinaryLoggerEnabled;
 
         /// <summary>
         /// Describes whether to collect the project files (including imported project files) used during the build.
@@ -86,27 +98,31 @@ namespace Microsoft.Build.Logging
 
         private string FilePath { get; set; }
 
-        /// <summary>
+        /// <summary> Gets or sets the verbosity level.</summary>
+        /// <remarks>
         /// The binary logger Verbosity is always maximum (Diagnostic). It tries to capture as much
         /// information as possible.
-        /// </summary>
+        /// </remarks>
         public LoggerVerbosity Verbosity { get; set; } = LoggerVerbosity.Diagnostic;
 
         /// <summary>
-        /// The only supported parameter is the output log file path (e.g. "msbuild.binlog") 
+        /// Gets or sets the parameters. The only supported parameter is the output log file path (for example, "msbuild.binlog"). 
         /// </summary>
         public string Parameters { get; set; }
 
         /// <summary>
-        /// Initializes the logger by subscribing to events of IEventSource
+        /// Initializes the logger by subscribing to events of the specified event source.
         /// </summary>
         public void Initialize(IEventSource eventSource)
         {
             _initialTargetOutputLogging = Environment.GetEnvironmentVariable("MSBUILDTARGETOUTPUTLOGGING");
             _initialLogImports = Traits.Instance.EscapeHatches.LogProjectImports;
+            _initialIsBinaryLoggerEnabled = Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED");
 
             Environment.SetEnvironmentVariable("MSBUILDTARGETOUTPUTLOGGING", "true");
             Environment.SetEnvironmentVariable("MSBUILDLOGIMPORTS", "1");
+            Environment.SetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED", bool.TrueString);
+
             Traits.Instance.EscapeHatches.LogProjectImports = true;
             bool logPropertiesAndItemsAfterEvaluation = Traits.Instance.EscapeHatches.LogPropertiesAndItemsAfterEvaluation ?? true;
 
@@ -204,6 +220,8 @@ namespace Microsoft.Build.Logging
         {
             Environment.SetEnvironmentVariable("MSBUILDTARGETOUTPUTLOGGING", _initialTargetOutputLogging);
             Environment.SetEnvironmentVariable("MSBUILDLOGIMPORTS", _initialLogImports ? "1" : "");
+            Environment.SetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED", _initialIsBinaryLoggerEnabled);
+
             Traits.Instance.EscapeHatches.LogProjectImports = _initialLogImports;
 
             if (projectImportsCollector != null)
@@ -263,6 +281,10 @@ namespace Microsoft.Build.Logging
             else if (e is MetaprojectGeneratedEventArgs metaprojectArgs)
             {
                 projectImportsCollector.AddFileFromMemory(metaprojectArgs.ProjectFile, metaprojectArgs.metaprojectXml);
+            }
+            else if (e is ResponseFileUsedEventArgs responseFileArgs && responseFileArgs.ResponseFilePath != null)
+            {
+                projectImportsCollector.AddFile(responseFileArgs.ResponseFilePath);
             }
         }
 

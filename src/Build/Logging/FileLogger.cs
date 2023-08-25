@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -8,6 +8,8 @@ using System.Text;
 using Microsoft.Build.BackEnd.Logging;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
+
+#nullable disable
 
 namespace Microsoft.Build.Logging
 {
@@ -37,6 +39,11 @@ namespace Microsoft.Build.Logging
                 colorReset: BaseConsoleLogger.DontResetColor)
         {
             WriteHandler = Write;
+
+            if (EncodingUtilities.GetExternalOverriddenUILanguageIfSupportableWithEncoding() != null)
+            {
+                _encoding = Encoding.UTF8;
+            }
         }
 
         #endregion
@@ -153,15 +160,7 @@ namespace Microsoft.Build.Logging
         /// </summary>
         public override void Shutdown()
         {
-            try
-            {
-                // Do, or do not, there is no try.
-            }
-            finally
-            {
-                // Keep FxCop happy by closing in a Finally.
-                _fileWriter?.Dispose();
-            }
+            _fileWriter?.Dispose();
         }
 
         /// <summary>
@@ -169,11 +168,17 @@ namespace Microsoft.Build.Logging
         /// </summary>
         private void ParseFileLoggerParameters()
         {
-            if (Parameters == null) return;
+            if (Parameters == null)
+            {
+                return;
+            }
 
             foreach (string parameter in Parameters.Split(s_fileLoggerParameterDelimiters))
             {
-                if (parameter.Length <= 0) continue;
+                if (parameter.Length <= 0)
+                {
+                    continue;
+                }
 
                 var parameterAndValue = parameter.Split(s_fileLoggerParameterValueSplitCharacter);
 
