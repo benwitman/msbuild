@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 #endif
 
 using Microsoft.Build.BackEnd.Components.RequestBuilder;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
 using System.IO;

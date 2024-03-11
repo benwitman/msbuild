@@ -54,6 +54,11 @@ namespace Microsoft.Build.Tasks
         private delegate string[] GetListPath(string targetFrameworkDirectory);
 
         /// <summary>
+        /// Cache of system state information, used to optimize performance.
+        /// </summary>
+        internal SystemState _cache = null;
+
+        /// <summary>
         /// Construct
         /// </summary>
         public ResolveAssemblyReference()
@@ -2291,6 +2296,51 @@ namespace Microsoft.Build.Tasks
                         }
                     }
 
+                    // Load any prior saved state.
+                    if (!GlobalEnvVars.GlobalIsStatic)
+                        ReadStateFile(fileExists);
+
+                    _cache.SetInstalledAssemblyInformation(installedAssemblyTableInfo);
+
+                    // Cache delegates.
+                    getAssemblyMetadata = _cache.CacheDelegate(getAssemblyMetadata);
+                    fileExists = _cache.CacheDelegate();
+                    directoryExists = _cache.CacheDelegate(directoryExists);
+                    getDirectories = _cache.CacheDelegate(getDirectories);
+
+                    ReferenceTable dependencyTable = null;
+
+                    // Wrap the GetLastWriteTime callback with a check for SDK/immutable files.
+                    _cache.SetGetLastWriteTime(path =>
+                    {
+                        if (dependencyTable?.IsImmutableFile(path) == true)
+                        {
+                            // We don't want to perform I/O to see what the actual timestamp on disk is so we return a fixed made up value.
+                            // Note that this value makes the file exist per the check in SystemState.FileTimestampIndicatesFileExists.
+                            return SystemState.FileState.ImmutableFileLastModifiedMarker;
+                        }
+                        return getLastWriteTime(path);
+                    });
+
+                    // Wrap the GetAssemblyName and GetRuntimeVersion callbacks with a check for SDK/immutable files.
+                    GetAssemblyName originalGetAssemblyName = getAssemblyName;
+                    getAssemblyName = _cache.CacheDelegate(path =>
+                    {
+                        AssemblyNameExtension assemblyName = dependencyTable?.GetImmutableFileAssemblyName(path);
+                        return assemblyName ?? originalGetAssemblyName(path);
+                    });
+
+                    GetAssemblyRuntimeVersion originalGetRuntimeVersion = getRuntimeVersion;
+                    getRuntimeVersion = _cache.CacheDelegate(path =>
+                    {
+                        if (dependencyTable?.IsImmutableFile(path) == true)
+                        {
+                            // There are no WinRT assemblies in the SDK, everything has the .NET metadata version.
+                            return DotNetAssemblyRuntimeVersion;
+                        }
+                        return originalGetRuntimeVersion(path);
+                    });
+
                     _projectTargetFramework = FrameworkVersionFromString(_projectTargetFrameworkAsString);
 
                     // Filter out all Assemblies that have SubType!='', or higher framework
@@ -2520,6 +2570,15 @@ namespace Microsoft.Build.Tasks
 
                     this.DependsOnSystemRuntime = useSystemRuntime.ToString();
                     this.DependsOnNETStandard = useNetStandard.ToString();
+
+                    if (!GlobalEnvVars.GlobalIsStatic)
+                        WriteStateFile();
+
+                    // Save the new state out and put into the file exists if it is actually on disk.
+                    if (_stateFile != null && fileExists(_stateFile))
+                    {
+                        _filesWritten.Add(new TaskItem(_stateFile));
+                    }
 
                     // Log the results.
                     success = LogResults(dependencyTable, idealAssemblyRemappings, idealAssemblyRemappingsIdentities, generalResolutionExceptions);
