@@ -1,11 +1,12 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
 	<ItemGroup>
-		<None Include='A1'/>
+		<InputItemGroup Include="bin\file1.txt" />
+		<InputItemGroup Include="bin\file2.txt" />
 	</ItemGroup>
 	<Target Name="Main">
-		<AssignTargetPath Files="@(None)" RootFolder="$(MSBuildProjectDirectory)">
-			<Output TaskParameter="AssignedFiles" ItemName="_NoneWithTargetPath" />
+		<AssignTargetPath Files="@(InputItemGroup)" RootFolder="$(MSBuildProjectDirectory)\bin">
+			<Output TaskParameter="AssignedFiles" ItemName="OutputItemGroup" />
 		</AssignTargetPath>
-		<Message Text="None={@(_NoneWithTargetPath)}" />
+		<Message Text="None=@(OutputItemGroup->'%(TargetPath)')" />
 	</Target>
 </Project>
