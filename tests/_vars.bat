@@ -10,4 +10,5 @@ set _Static_Intermediate_MetaBuildGraph=%_Static_Intermediate%\MetaBuildGraph
 set _Static_Intermediate_MetaBuildOutput=%_Static_Intermediate%\MetaBuildOutput
 set _Static_Intermediate_ProductBuildGraph=%_Static_Intermediate%\ProductBuildGraph
 set _Static_Intermediate_ProductBuildOutput=%_Static_Intermediate%\ProductBuildOutput
+set _Static_Intermediate_PreProcess=%~dp0intermediate\%1\PreProcess
 set _Static_Source=%~dp0%1

@@ -1,10 +1,12 @@
 @echo off
+setlocal
 IF "%1" == "" ((echo Usage: dominobuild [testname]) & exit /B 1)
 
-set _Static_Artifacts_MsBuild=%~dp0..\artifacts\bin\MSBuild\Debug\net472
-set _Static_Source=%~dp0%1
-set _Static_Intermediate=%~dp0intermediate\%1
-set _Static_Intermediate_PreProcess=%~dp0intermediate\%1\PreProcess
+call %~dp0_vars.bat %1
+IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
+
+call %~dp0_cleanoutputs.bat
+IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
 IF NOT EXIST %_Static_Intermediate% mkdir %_Static_Intermediate%
 
