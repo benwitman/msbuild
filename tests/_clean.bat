@@ -14,6 +14,3 @@ IF EXIST %_Static_Intermediate_ProductBuildGraph% rmdir /S/Q %_Static_Intermedia
 mkdir %_Static_Intermediate_ProductBuildGraph%
 IF EXIST %_Static_Intermediate_ProductBuildOutput% rmdir /S/Q %_Static_Intermediate_ProductBuildOutput%
 mkdir %_Static_Intermediate_ProductBuildOutput%
-
-IF EXIST %_Static_Source%\bin rmdir /S/Q %_Static_Source%\bin
-IF EXIST %_Static_Source%\obj rmdir /S/Q %_Static_Source%\obj

@@ -8,6 +8,9 @@ IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 call %~dp0_clean.bat
 IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
+call %~dp0_cleanoutputs.bat
+IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
+
 call %~dp0_metaprep.bat 
 IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
