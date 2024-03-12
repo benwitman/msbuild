@@ -26,6 +26,16 @@
         <note>{StrBegin="MSB4003: "}UE: Tasks are not allowed to use incorrect case for reserved attributes on the task nodes e.g. "continueonerror"
     instead of the "ContinueOnError".</note>
       </trans-unit>
+      <trans-unit id="BuildFinishedQuestionFailure">
+        <source>Question build FAILED. The build exited early as it encountered a target or task that was not up-to-date.</source>
+        <target state="translated">СБОЙ сборки вопроса. Выход из сборки выполнен раньше, так как была обнаружена цель или задача без обновления.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildFinishedQuestionSuccess">
+        <source>Question build succeeded. Up-to-date checks passed.</source>
+        <target state="translated">Сборка вопроса успешно выполнена. Проверки актуальности пройдены.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildInProgress">
         <source>The operation cannot be completed because a build is already in progress.</source>
         <target state="translated">Не удалось завершить операцию, так как уже выполняется сборка.</target>
@@ -54,6 +64,11 @@
       {StrBegin="MSB4252:"}
       LOCALIZATION: Do not localize the following words: ProjectReference, ProjectReferenceTargets
     </note>
+      </trans-unit>
+      <trans-unit id="CannotCopyFromElementOfThatType">
+        <source>MSB4277: Cannot copy from object of that type.</source>
+        <target state="translated">MSB4277: не удается скопировать из объекта этого типа.</target>
+        <note>{StrBegin="MSB4277: "}</note>
       </trans-unit>
       <trans-unit id="CannotExpandItemMetadata">
         <source>MSB4248: Cannot expand metadata in expression "{0}". {1}</source>
@@ -133,6 +148,11 @@
         <target state="translated">Не удалось разрешить пакет SDK "{0}". В одном из приведенных ниже сообщений проверки указано, почему не удалось разрешить пакет SDK. Изучите и устраните возникшую проблему, чтобы правильно указать пакет SDK.
   {1}</target>
         <note />
+      </trans-unit>
+      <trans-unit id="General.TwoVectorsMustHaveSameLength">
+        <source>MSB3094: "{2}" refers to {0} item(s), and "{3}" refers to {1} item(s). They must have the same number of items.</source>
+        <target state="translated">MSB3094: "{2}" ссылается на следующее число элементов: {0}, а "{3}" — на {1}. Число элементов должно быть одинаковым.</target>
+        <note>{StrBegin="MSB3094: "}</note>
       </trans-unit>
       <trans-unit id="IllFormedPropertySpaceInCondition">
         <source>MSB4259: Unexpected space at position "{1}" of condition "{0}". Did you forget to remove a space?</source>
@@ -254,6 +274,11 @@
         <target state="translated">MSB4273: в кэше проектов возникло необработанное исключение из метода {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectCacheHandleBuildResultFailed">
+        <source>MSB4269: The project cache failed while handling a build result for the following project: {0}.</source>
+        <target state="translated">MSB4269: сбой кэша проекта при обработке результата сборки для следующего проекта: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheHitWithDefaultTargets">
         <source>Project cache hit for "{0}" (default targets).</source>
         <target state="translated">Попадание в кэше проекта для "{0}" (целевые объекты по умолчанию).</target>
@@ -360,6 +385,11 @@
         <target state="translated">MSB4274: Отключение внутрипроцессного узла приводит к замедлению при использовании плагинов кэша проекта, которые создают запросы на сборку прокси-сервера.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ReportFileAccessesX64Only">
+        <source>Reporting file accesses is only currently supported using the x64 flavor of MSBuild.</source>
+        <target state="translated">Доступ к файлам отчетов сейчас поддерживается только при использовании 64-разрядного варианта приложения MSBuild.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SDKResolverCriticalFailure">
         <source>MSB4242: SDK Resolver Failure: "{0}"</source>
         <target state="translated">MSB4242: сбой сопоставителя SDK: "{0}"</target>
@@ -431,6 +461,11 @@
         <target state="translated">Сборка загружена во время {0}{1}: {2} (расположение: {3}, MVID: {4}, домен приложения: {5})</target>
         <note />
       </trans-unit>
+      <trans-unit id="TaskAssemblyLoadedWithAssemblyLoadContext">
+        <source>Assembly loaded during {0}{1}: {2} (location: {3}, MVID: {4}, AssemblyLoadContext: {5})</source>
+        <target state="translated">Сборка загружена во время {0}{1}: {2} (расположение: {3}, MVID: {4}, AssemblyLoadContext: {5})</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TaskReleasedCores">
         <source>Task "{0}" released {1} cores and now holds {2} cores total.</source>
         <target state="translated">Задача "{0}" освободила указанное число ядер ({1}). Теперь общее число ядер, которыми располагает задача, равно {2}.</target>
@@ -455,9 +490,9 @@
     </note>
       </trans-unit>
       <trans-unit id="UnhandledMSBuildError">
-        <source>This is an unhandled exception in MSBuild -- PLEASE UPVOTE AN EXISTING ISSUE OR FILE A NEW ONE AT https://aka.ms/msbuild/unhandled.
+        <source>This is an unhandled exception in MSBuild -- PLEASE UPVOTE AN EXISTING ISSUE OR FILE A NEW ONE AT https://aka.ms/msbuild/unhandled
     {0}</source>
-        <target state="translated">Это необработанное исключение в MSBuild — ПРОГОЛОСУЙТЕ ЗА СУЩЕСТВУЮЩУЮ ПРОБЛЕМУ ИЛИ СОЗДАЙТЕ НОВУЮ на сайте https://aka.ms/msbuild/unhandled.
+        <target state="translated">Это необработанное исключение в MSBuild. ПРОГОЛОСУЙТЕ ЗА СУЩЕСТВУЮЩУЮ ПРОБЛЕМУ ИЛИ СООБЩИТЕ О НОВУЙ НА https://aka.ms/msbuild/unhandled
     {0}</target>
         <note />
       </trans-unit>

@@ -15,7 +15,7 @@ namespace Microsoft.Build.Framework
 {
     /// <summary>
     /// Exception that should be thrown by a logger when it cannot continue.
-    /// Allows a logger to force the build to stop in an explicit way, when, for example, it 
+    /// Allows a logger to force the build to stop in an explicit way, when, for example, it
     /// receives invalid parameters, or cannot write to disk.
     /// </summary>
     // WARNING: marking a type [Serializable] without implementing ISerializable imposes a serialization contract -- it is a
@@ -77,11 +77,14 @@ namespace Microsoft.Build.Framework
         #region Serialization (update when adding new class members)
 
         /// <summary>
-        /// Protected constructor used for (de)serialization. 
+        /// Protected constructor used for (de)serialization.
         /// If we ever add new members to this class, we'll need to update this.
         /// </summary>
         /// <param name="info">Serialization info</param>
         /// <param name="context">Streaming context</param>
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         protected LoggerException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -97,6 +100,9 @@ namespace Microsoft.Build.Framework
         /// <param name="context">Streaming context</param>
 #if FEATURE_SECURITY_PERMISSIONS
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+#endif
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -121,7 +127,7 @@ namespace Microsoft.Build.Framework
             helpKeyword = state[nameof(helpKeyword)];
         }
 
-        #endregion
+#endregion
 
         #region Properties
 

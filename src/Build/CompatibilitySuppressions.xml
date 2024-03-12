@@ -1,39 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <!-- Need to suppress due to AppCompat limitation https://github.com/dotnet/sdk/issues/32922	 -->
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- Changes to the Experimental namespace are considered non-breaking, and this ctor should be used only internally, not by plugin code. -->
   <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.BackEnd.SdkResolution.SdkResolverException</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Build.Experimental.FileAccess.FileAccessData.#ctor(Microsoft.Build.Experimental.FileAccess.ReportedFileOperation,Microsoft.Build.Experimental.FileAccess.RequestedAccess,System.UInt32,System.UInt32,Microsoft.Build.Experimental.FileAccess.DesiredAccess,Microsoft.Build.Experimental.FileAccess.FlagsAndAttributes,System.String,System.String,System.Boolean)</Target>
+    <Left>lib/net472/Microsoft.Build.dll</Left>
+    <Right>lib/net472/Microsoft.Build.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Exceptions.BuildAbortedException</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Build.Experimental.FileAccess.FileAccessData.#ctor(Microsoft.Build.Experimental.FileAccess.ReportedFileOperation,Microsoft.Build.Experimental.FileAccess.RequestedAccess,System.UInt32,System.UInt32,Microsoft.Build.Experimental.FileAccess.DesiredAccess,Microsoft.Build.Experimental.FileAccess.FlagsAndAttributes,System.String,System.String,System.Boolean)</Target>
+    <Left>lib/net8.0/Microsoft.Build.dll</Left>
+    <Right>lib/net8.0/Microsoft.Build.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Exceptions.CircularDependencyException</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Build.Experimental.FileAccess.FileAccessData.#ctor(Microsoft.Build.Experimental.FileAccess.ReportedFileOperation,Microsoft.Build.Experimental.FileAccess.RequestedAccess,System.UInt32,System.UInt32,Microsoft.Build.Experimental.FileAccess.DesiredAccess,Microsoft.Build.Experimental.FileAccess.FlagsAndAttributes,System.String,System.String,System.Boolean)</Target>
+    <Left>ref/net472/Microsoft.Build.dll</Left>
+    <Right>ref/net472/Microsoft.Build.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Exceptions.InternalLoggerException</Target>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Exceptions.InvalidToolsetDefinitionException</Target>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Exceptions.InvalidProjectFileException</Target>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
-    <Target>T:Microsoft.Build.Experimental.ProjectCache.ProjectCacheException</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Build.Experimental.FileAccess.FileAccessData.#ctor(Microsoft.Build.Experimental.FileAccess.ReportedFileOperation,Microsoft.Build.Experimental.FileAccess.RequestedAccess,System.UInt32,System.UInt32,Microsoft.Build.Experimental.FileAccess.DesiredAccess,Microsoft.Build.Experimental.FileAccess.FlagsAndAttributes,System.String,System.String,System.Boolean)</Target>
+    <Left>ref/net8.0/Microsoft.Build.dll</Left>
+    <Right>ref/net8.0/Microsoft.Build.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
 </Suppressions>

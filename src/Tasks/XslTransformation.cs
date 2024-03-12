@@ -201,7 +201,7 @@ namespace Microsoft.Build.Tasks
         /// Takes the raw XML and loads XsltArgumentList
         /// </summary>
         /// <param name="xsltParametersXml">The raw XML that holds each parameter as <Parameter Name="" Value="" Namespace="" /> </param>
-        /// <returns>XsltArgumentList</returns>
+        /// <returns>XsltArgumentList.</returns>
         private static XsltArgumentList ProcessXsltArguments(string xsltParametersXml)
         {
             XsltArgumentList arguments = new XsltArgumentList();
@@ -214,8 +214,10 @@ namespace Microsoft.Build.Tasks
             try
             {
                 XmlReaderSettings settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore };
-                XmlReader reader = XmlReader.Create(new StringReader("<XsltParameters>" + xsltParametersXml + "</XsltParameters>"), settings);
-                doc.Load(reader);
+                using (XmlReader reader = XmlReader.Create(new StringReader("<XsltParameters>" + xsltParametersXml + "</XsltParameters>"), settings))
+                {
+                    doc.Load(reader);
+                }
             }
             catch (XmlException xe)
             {
@@ -348,7 +350,7 @@ namespace Microsoft.Build.Tasks
             private readonly XslModes _xslMode;
 
             /// <summary>
-            /// Contains the raw XSLT 
+            /// Contains the raw XSLT
             /// or the path to XSLT file
             /// or the path to compiled XSLT dll.
             /// </summary>

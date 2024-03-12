@@ -55,6 +55,9 @@ namespace Microsoft.Build.Exceptions
         /// <summary>
         /// Basic constructor.
         /// </summary>
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         protected InvalidToolsetDefinitionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -95,6 +98,9 @@ namespace Microsoft.Build.Exceptions
 #if FEATURE_SECURITY_PERMISSIONS
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
 #endif
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             ErrorUtilities.VerifyThrowArgumentNull(info, nameof(info));
@@ -133,7 +139,7 @@ namespace Microsoft.Build.Exceptions
 
         /// <summary>
         /// Throws an InvalidToolsetDefinitionException.
-        /// 
+        ///
         /// PERF WARNING: calling a method that takes a variable number of arguments
         /// is expensive, because memory is allocated for the array of arguments -- do
         /// not call this method repeatedly in performance-critical scenarios
@@ -150,7 +156,7 @@ namespace Microsoft.Build.Exceptions
         /// <summary>
         /// Throws an InvalidToolsetDefinitionException including a specified inner exception,
         /// which may be interesting to hosts.
-        /// 
+        ///
         /// PERF WARNING: calling a method that takes a variable number of arguments
         /// is expensive, because memory is allocated for the array of arguments -- do
         /// not call this method repeatedly in performance-critical scenarios
@@ -160,9 +166,7 @@ namespace Microsoft.Build.Exceptions
             string resourceName,
             params string[] args)
         {
-#if DEBUG
             ResourceUtilities.VerifyResourceStringExists(resourceName);
-#endif
             string errorCode;
             string helpKeyword;
             string message = ResourceUtilities.FormatResourceStringStripCodeAndKeyword(out errorCode, out helpKeyword, resourceName, (object[])args);

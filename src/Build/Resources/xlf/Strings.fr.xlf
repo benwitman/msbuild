@@ -26,6 +26,16 @@
         <note>{StrBegin="MSB4003: "}UE: Tasks are not allowed to use incorrect case for reserved attributes on the task nodes e.g. "continueonerror"
     instead of the "ContinueOnError".</note>
       </trans-unit>
+      <trans-unit id="BuildFinishedQuestionFailure">
+        <source>Question build FAILED. The build exited early as it encountered a target or task that was not up-to-date.</source>
+        <target state="translated">ÉCHEC de la génération de la question. La génération s’est arrêtée tôt, car elle a rencontré une cible ou une tâche qui n’était pas à jour.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildFinishedQuestionSuccess">
+        <source>Question build succeeded. Up-to-date checks passed.</source>
+        <target state="translated">La génération de la question a réussi. Contrôles de mise à jour réussis.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildInProgress">
         <source>The operation cannot be completed because a build is already in progress.</source>
         <target state="translated">Impossible d'effectuer l'opération car une génération est déjà en cours.</target>
@@ -54,6 +64,11 @@
       {StrBegin="MSB4252:"}
       LOCALIZATION: Do not localize the following words: ProjectReference, ProjectReferenceTargets
     </note>
+      </trans-unit>
+      <trans-unit id="CannotCopyFromElementOfThatType">
+        <source>MSB4277: Cannot copy from object of that type.</source>
+        <target state="translated">MSB4277: Impossible de copier à partir d’un objet de ce type.</target>
+        <note>{StrBegin="MSB4277: "}</note>
       </trans-unit>
       <trans-unit id="CannotExpandItemMetadata">
         <source>MSB4248: Cannot expand metadata in expression "{0}". {1}</source>
@@ -133,6 +148,11 @@
         <target state="translated">Impossible de résoudre le SDK «{0}». Exactement l’un des messages de sondage ci-dessous indique pourquoi nous n’avons pas pu résoudre le Kit de développement logiciel (SDK). Examinez et résolvez ce message pour spécifier correctement le Kit de développement logiciel (SDK).
   {1}</target>
         <note />
+      </trans-unit>
+      <trans-unit id="General.TwoVectorsMustHaveSameLength">
+        <source>MSB3094: "{2}" refers to {0} item(s), and "{3}" refers to {1} item(s). They must have the same number of items.</source>
+        <target state="translated">MSB3094: "{2}" fait référence à {0} élément(s) et "{3}", à {1} élément(s). Ils doivent avoir le même nombre d'éléments.</target>
+        <note>{StrBegin="MSB3094: "}</note>
       </trans-unit>
       <trans-unit id="IllFormedPropertySpaceInCondition">
         <source>MSB4259: Unexpected space at position "{1}" of condition "{0}". Did you forget to remove a space?</source>
@@ -254,6 +274,11 @@
         <target state="translated">MSB4273: le cache de projet a levé une exception non gérée à partir de la méthode {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectCacheHandleBuildResultFailed">
+        <source>MSB4269: The project cache failed while handling a build result for the following project: {0}.</source>
+        <target state="translated">MSB4269: le cache du projet a échoué lors de la gestion d’un résultat de build pour le projet suivant : {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheHitWithDefaultTargets">
         <source>Project cache hit for "{0}" (default targets).</source>
         <target state="translated">Le cache de projet a été atteint pour « {0} » (cibles par défaut).</target>
@@ -360,6 +385,11 @@
         <target state="translated">MSB4274: la désactivation du nœud inproc entraîne une détérioration des performances lors de l’utilisation de plug-ins de cache de projet qui émettent des requêtes de build proxy.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ReportFileAccessesX64Only">
+        <source>Reporting file accesses is only currently supported using the x64 flavor of MSBuild.</source>
+        <target state="translated">Les accès aux fichiers de création de rapports sont uniquement pris en charge à l’aide de la saveur x64 de MSBuild.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SDKResolverCriticalFailure">
         <source>MSB4242: SDK Resolver Failure: "{0}"</source>
         <target state="translated">MSB4242: Échec du Programme de Résolution SDK : «{0}»</target>
@@ -431,6 +461,11 @@
         <target state="translated">Assembly chargé pendant {0}{1}: {2} (emplacement : {3}, MVID : {4}, AppDomain : {5})</target>
         <note />
       </trans-unit>
+      <trans-unit id="TaskAssemblyLoadedWithAssemblyLoadContext">
+        <source>Assembly loaded during {0}{1}: {2} (location: {3}, MVID: {4}, AssemblyLoadContext: {5})</source>
+        <target state="translated">Assembly chargé pendant {0}{1} : {2} (emplacement : {3}, MVID : {4}, AssemblyLoadContext : {5})</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TaskReleasedCores">
         <source>Task "{0}" released {1} cores and now holds {2} cores total.</source>
         <target state="translated">La tâche "{0}" a libéré {1} cœur. Elle détient désormais {2} cœurs au total.</target>
@@ -455,9 +490,9 @@
     </note>
       </trans-unit>
       <trans-unit id="UnhandledMSBuildError">
-        <source>This is an unhandled exception in MSBuild -- PLEASE UPVOTE AN EXISTING ISSUE OR FILE A NEW ONE AT https://aka.ms/msbuild/unhandled.
+        <source>This is an unhandled exception in MSBuild -- PLEASE UPVOTE AN EXISTING ISSUE OR FILE A NEW ONE AT https://aka.ms/msbuild/unhandled
     {0}</source>
-        <target state="translated">Il s’agit d’une exception non gérée dans MSBuild -- VOTEZ POUR UN PROBLÈME EXISTANT OU ENTREZ UN NOUVEAU FICHIER À https://aka.ms/msbuild/unhandled.
+        <target state="translated">Il s’agit d’une exception non prise en charge dans MSBuild –– VOTEZ POUR UN PROBLÈME EXISTANT OU CRÉEZ-EN UN SUR https://aka.ms/msbuild/unhandled
     {0}</target>
         <note />
       </trans-unit>

@@ -80,11 +80,14 @@ namespace Microsoft.Build.Exceptions
         #region Serialization (update when adding new class members)
 
         /// <summary>
-        /// Protected constructor used for (de)serialization. 
+        /// Protected constructor used for (de)serialization.
         /// If we ever add new members to this class, we'll need to update this.
         /// </summary>
         /// <param name="info"></param>
         /// <param name="context"></param>
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         private InvalidProjectFileException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -107,6 +110,9 @@ namespace Microsoft.Build.Exceptions
         /// <param name="context"></param>
 #if FEATURE_SECURITY_PERMISSIONS
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+#endif
+#if NET8_0_OR_GREATER
+        [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -364,7 +370,7 @@ namespace Microsoft.Build.Exceptions
         }
 
         /// <summary>
-        /// Whether the exception has already been logged. Allows the exception to be logged at the 
+        /// Whether the exception has already been logged. Allows the exception to be logged at the
         /// most appropriate location, but continue to be propagated.
         /// </summary>
         public bool HasBeenLogged

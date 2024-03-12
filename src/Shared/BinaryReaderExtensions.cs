@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
@@ -98,6 +99,31 @@ namespace Microsoft.Build.Shared
         public static unsafe Guid ReadGuid(this BinaryReader reader)
         {
             return new Guid(reader.ReadBytes(sizeof(Guid)));
+        }
+
+        public static void ReadExtendedBuildEventData(this BinaryReader reader, IExtendedBuildEventArgs data)
+        {
+            data.ExtendedType = reader.ReadString();
+            data.ExtendedData = reader.ReadOptionalString();
+
+            bool haveMetadata = reader.ReadBoolean();
+            if (haveMetadata)
+            {
+                data.ExtendedMetadata = new Dictionary<string, string?>();
+
+                int count = reader.Read7BitEncodedInt();
+                for (int i = 0; i < count; i++)
+                {
+                    string key = reader.ReadString();
+                    string? value = reader.ReadOptionalString();
+
+                    data.ExtendedMetadata.Add(key, value);
+                }
+            }
+            else
+            {
+                data.ExtendedMetadata = null;
+            }
         }
     }
 }
