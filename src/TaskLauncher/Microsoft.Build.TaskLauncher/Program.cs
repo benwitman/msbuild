@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -14,6 +13,8 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
 using Microsoft.Build.Utilities;
+
+#nullable disable
 
 namespace Microsoft.Build.TaskLauncher
 {
@@ -525,6 +526,7 @@ namespace Microsoft.Build.TaskLauncher
             foreach (StaticTarget.Task staticTask in target.Tasks)
             {
                 Type type;
+                Assembly assembly = null;
                 if (staticTask.AssemblyFile != null)
                 {
                     AssemblyName an = AssemblyName.GetAssemblyName(staticTask.AssemblyFile);
@@ -533,17 +535,17 @@ namespace Microsoft.Build.TaskLauncher
                         Console.WriteLine("Caouldn't get assembly name for assembly file: " + staticTask.AssemblyFile);
                         return 1;
                     }
-                    Assembly a = Assembly.Load(an);
-                    if (a == null)
+                    assembly = Assembly.Load(an);
+                    if (assembly == null)
                     {
                         Console.WriteLine("Couldn't loaded assembly for assembly: " + an.FullName + " from file: " + staticTask.AssemblyFile);
                         return 1;
                     }
-                    type = a.GetType(staticTask.Name.Split(',')[0]);
+                    type = assembly.GetType(staticTask.Name.Split(',')[0]);
                     if (type == null)
                     {
                         Console.WriteLine("Couldn't create type for string: " + staticTask.Name.Split(',')[0] + " assembly file: " + (staticTask.AssemblyFile ?? "null") + " and assembly name: " + (staticTask.AssemblyName ?? "null"));
-                        Console.WriteLine("Types in the assembly:\n" + string.Join(",\n", a.GetTypes().Select(availableType => availableType.FullName)));
+                        Console.WriteLine("Types in the assembly:\n" + string.Join(",\n", assembly.GetTypes().Select(availableType => availableType.FullName)));
                         return 1;
                     }
                 }
@@ -564,19 +566,16 @@ namespace Microsoft.Build.TaskLauncher
                     return 1;
                 }
 
-                LoadedType loadedType = new LoadedType(type, assemblyLoadInfo, null);
+                LoadedType loadedType = new LoadedType(type, assemblyLoadInfo, assembly ?? type.Assembly, typeof(ITaskItem));
                 TaskPropertyInfo[] taskProperties = AssemblyTaskFactory.GetTaskParameters(loadedType);
 
-                ITask task = TaskLoader.CreateTask(loadedType, staticTask.Name, staticTask.AssemblyName, 0, 0, null
+                ITask task = TaskLoader.CreateTask(loadedType, staticTask.Name, staticTask.AssemblyName, 0, 0, logError: null
 
 #if FEATURE_APPDOMAIN
-            , null
+            , appDomainSetup: null, appDomainCreated: null, isOutOfProc: false, taskAppDomain: out var appDomain);
+#else
+            , false);
 #endif
-            , false
-#if FEATURE_APPDOMAIN
-            , out var appDomain
-#endif
-            );
                 foreach (var parameter in staticTask.Parameters)
                 {
                     var taskPropertyInfo = taskProperties.FirstOrDefault(property => property.Name == parameter.Key);
