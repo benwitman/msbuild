@@ -2297,7 +2297,9 @@ namespace Microsoft.Build.Tasks
                     }
 
                     // Load any prior saved state.
-                    if (!GlobalEnvVars.GlobalIsStatic)
+                    if (GlobalEnvVars.GlobalIsStatic)
+                        _cache = new SystemState();
+                    else
                         ReadStateFile(fileExists);
 
                     _cache.SetInstalledAssemblyInformation(installedAssemblyTableInfo);
