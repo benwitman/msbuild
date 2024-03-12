@@ -1,6 +1,5 @@
 {
   "sdk": {
-    "version": "7.0.406",
     "allowPrerelease": true
   },
   "tools": {
