@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Phrase>Hello World!</Phrase>
   </PropertyGroup>
-  <Target Name="Build" Inputs="input.txt" Outputs="output.txt">
-    <Exec Command="cmd /c copy input.txt output.txt"/>  
+  <Target Name="Build" Inputs="input.txt" Outputs="bin\output.txt">
+    <Exec Command="copy input.txt bin\output.txt"/>  
   </Target>
 </Project>
