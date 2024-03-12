@@ -20,6 +20,8 @@ namespace Microsoft.Build.TaskLauncher
 {
     public class Program
     {
+        
+
         public static int Main(string[] args)
         {
             if (args.Length == 0 || args[0] == "/?" || args[0] == "-?" || args[0] == "-help" || args[0] == "--help" || args[0] == "/help")
@@ -255,8 +257,9 @@ namespace Microsoft.Build.TaskLauncher
             StringBuilder specContents = new StringBuilder();
             specContents.AppendLine("import {Cmd, Transformer} from \"Sdk.Transformers\";\n");
             specContents.AppendLine(
-                string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ Transformer.sealSourceDirectory(d`{1}`, Transformer.SealSourceDirectoryOption.allDirectories) ] }};\n",
+                string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, untrackedDirectories: [{1}], dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ Transformer.sealSourceDirectory(d`{2}`, Transformer.SealSourceDirectoryOption.allDirectories) ] }};\n",
                     System.Reflection.Assembly.GetExecutingAssembly().Location,
+                    string.Join(", ", new[] { Path.Combine(Environment.GetEnvironmentVariable("VCINSTALLDIR"), @"Common7\IDE\Remote Debugger") }.Select(t => $"d`{t}`")), 
                     Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)));
 
             var ser = new DataContractJsonSerializer(typeof(StaticTarget));
