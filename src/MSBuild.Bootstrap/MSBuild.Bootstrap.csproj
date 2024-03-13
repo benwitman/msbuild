@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MSBuild\MSBuild.csproj" />
+    <ProjectReference Include="..\TaskLauncher\Microsoft.Build.TaskLauncher\Microsoft.Build.TaskLauncher.csproj" />
 
     <!-- Direct project references needed here to avoid NuGet version conflict errors -->
     <ProjectReference Include="..\Framework\Microsoft.Build.Framework.csproj" />
