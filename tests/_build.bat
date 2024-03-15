@@ -1,2 +1,2 @@
 @echo off
-call %~dp0..\build.cmd -WarnAsError 0 %*
+call %~dp0..\build.cmd -BinaryLog -WarnAsError 0 %*
