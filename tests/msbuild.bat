@@ -8,6 +8,5 @@ IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 call %~dp0_cleanoutputs.bat
 IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
-if DEFINED MSBUILDVERBOSITY set MSBUILDVERBOSITY=/verbosity:%MSBUILDVERBOSITY%
-
-%_Static_Artifacts_MsBuild%\MSBuild.exe %MSBUILDVERBOSITY% %_Static_Source%\project.proj
+call %~dp0_msbuild.bat
+IF ERRORLEVEL 1 exit /B %ERRORLEVEL%

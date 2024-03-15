@@ -13,7 +13,11 @@ IF NOT EXIST %_Static_Intermediate% mkdir %_Static_Intermediate%
 IF EXIST %_Static_Intermediate_PreProcess% rmdir /S/Q %_Static_Intermediate_PreProcess%
 mkdir %_Static_Intermediate_PreProcess%
 
-%_Static_Artifacts_MsBuild%\MSBuild.exe %_Static_Source%\project.proj /bl:%_Static_Intermediate_PreProcess%\project.binlog
+set _Static_MsBuild_Args=%_Static_MsBuild_Args% /bl:%_Static_Intermediate_PreProcess%\project.binlog
+
+call %~dp0_msbuild.bat
+IF ERRORLEVEL 1 exit /B %ERRORLEVEL%
+
 echo %_Static_Intermediate_PreProcess%\project.binlog
 
 for /F %%i in ('dir /B %LOCALAPPDATA%\MSBuildStructuredLogViewer\*app*') do (set _Static_MSBuildStructuredLogViewer=%LOCALAPPDATA%\MSBuildStructuredLogViewer\%%i\StructuredLogViewer.exe)
