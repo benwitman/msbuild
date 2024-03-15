@@ -69,7 +69,7 @@ namespace Microsoft.Build.TaskLauncher
             }
             else if (args[0].Equals("meta", StringComparison.OrdinalIgnoreCase))
             {
-                if (args.Length != 5)
+                if (args.Length != 6)
                 {
                     Usage();
                     return 1;
@@ -81,7 +81,7 @@ namespace Microsoft.Build.TaskLauncher
                     return 1;
                 }
 
-                MetagraphCreator(args[1], args[2], args[3], args[4]);
+                MetagraphCreator(args[1], args[2], args[3], args[4], args[5]);
                 return 0;
             }
             else
@@ -91,7 +91,7 @@ namespace Microsoft.Build.TaskLauncher
             }
         }
 
-        private static void MetagraphCreator(string sourceDirectory, string msBuild, string graphDirectory, string outputDirectory)
+        private static void MetagraphCreator(string sourceDirectory, string rootDirectory, string msBuild, string graphDirectory, string outputDirectory)
         {
             Mount srcMount = new Mount
             {
@@ -114,18 +114,34 @@ namespace Microsoft.Build.TaskLauncher
             Mount msbuildMount = new Mount
             {
                 Name = "MsbuildSrc",
-                Path = Path.GetDirectoryName(msBuild),
+                Path = rootDirectory,
                 IsReadable = true,
                 IsWritable = false,
                 TrackSourceFileChanges = true
             };
 
+
             string projectFile = Directory.EnumerateFiles(sourceDirectory).Single(t => t.EndsWith("proj"));
 
-            List<Mount> mounts = new List<Mount>() { TaskLauncherMount, ProgramDataMount, BreadcrumbStoreMount, ProgramFilesx86Mount, msbuildMount, srcMount, outputMount };
+            List<Mount> mounts = new List<Mount>() { ProgramDataMount, BreadcrumbStoreMount, ProgramFilesx86Mount, msbuildMount, srcMount, outputMount };
+
+            var dotNetRoot = Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
+
+            if (!string.IsNullOrEmpty(dotNetRoot))
+            {
+                mounts.Add(new Mount
+                {
+                    Name = "DotNetRoot",
+                    Path = dotNetRoot,
+                    IsReadable = true,
+                    IsWritable = false,
+                    TrackSourceFileChanges = true
+                });
+            }
+
             WriteConfigDsc(graphDirectory, mounts);
             WriteModuleConfigDsc(graphDirectory);
-            PrintMetabuildSpec(projectFile, msBuild, graphDirectory, outputDirectory);
+            PrintMetabuildSpec(projectFile, rootDirectory, dotNetRoot, msBuild, graphDirectory, outputDirectory);
 
             Console.WriteLine(@"%PKGDOMINO%\bxl.exe /c:" + graphDirectory + @"\config.dsc");
             Console.WriteLine(Assembly.GetExecutingAssembly().Location + @" print " + outputDirectory + "\\graph.json " + sourceDirectory);
@@ -347,7 +363,7 @@ namespace Microsoft.Build.TaskLauncher
             return 0;
         }
 
-        private static void PrintMetabuildSpec(string projectFile, string msBuild, string graphDirectory, string outputDirectory)
+        private static void PrintMetabuildSpec(string projectFile, string rootDirectory, string dotNetRoot, string msBuild, string graphDirectory, string outputDirectory)
         {
             projectFile = Path.GetFullPath(projectFile);
             DirectoryInfo projFolder = Directory.GetParent(projectFile);
@@ -367,6 +383,7 @@ namespace Microsoft.Build.TaskLauncher
                 inputs.Add($"f`{Path.Combine(projFolder.FullName, "Directory.Build.rsp")}`");
                 inputs.Add($"f`{Path.Combine(projFolder.FullName, "Directory.Build.props")}`");
                 inputs.Add($"f`{Path.Combine(projFolder.FullName, ".editorconfig")}`");
+                inputs.Add($"f`{Path.Combine(projFolder.FullName, "global.json")}`");
                 inputs.Add($"f`{Path.Combine(projFolder.FullName, "Directory.Build.targets")}`");
 
                 projFolder = projFolder.Parent;
@@ -382,9 +399,13 @@ namespace Microsoft.Build.TaskLauncher
             List<(string, string)> envVars = new List<(string, string)>()
             {
                 ("MSBUILDSTATIC", "1"),
-                ("MSBUILDSTATIC_OUTPUT", NormalizeRawString(outputGraph)),
-                ("ProgramData", Environment.GetEnvironmentVariable("ProgramData"))
+                ("MSBUILDSTATIC_OUTPUT", outputGraph),
+                ("ProgramData", Environment.GetEnvironmentVariable("ProgramData")),
+                ("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR", Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR")),
+                ("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotNetRoot)
             };
+
+            
 
             StringBuilder specContents = new StringBuilder();
             specContents.AppendLine("import {Artifact, Cmd, Transformer} from \"Sdk.Transformers\";");
@@ -394,19 +415,18 @@ const tool: Transformer.ToolDefinition =
     exe: f`{0}`,
     dependsOnWindowsDirectories: true,
     prepareTempDirectory: true,
-    runtimeDirectoryDependencies:
-    [
-        Transformer.sealSourceDirectory(d`{1}`, Transformer.SealSourceDirectoryOption.allDirectories)
-    ]
+    runtimeDirectoryDependencies: [{1}]
 }};",
                 msBuild,
-                Path.GetDirectoryName(msBuild)));
+                string.Join(", ", new[] { rootDirectory, dotNetRoot}.Where(t => !string.IsNullOrEmpty(t)).Select(t => string.Format(@"
+Transformer.sealSourceDirectory(d`{0}`, Transformer.SealSourceDirectoryOption.allDirectories)", t)))
+            ));
 
             specContents.AppendLine(string.Format(@"
 const {0} = Transformer.execute(
 {{
     tool: tool,
-    arguments: [ Cmd.rawArgument(""{1}"") ],
+    arguments: [ Cmd.rawArgument(""{1}""), Cmd.rawArgument(""/restore"") ],
     environmentVariables: [{2}],
     description: ""{3}"",
     workingDirectory: d`{4}`,
@@ -418,7 +438,7 @@ const {0} = Transformer.execute(
 ",
                 "msbuild0",
                 NormalizeRawString(projectFile),
-                string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{envVar.Item2}\" }}")),
+                string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{NormalizeRawString(envVar.Item2)}\" }}")),
                 "Running static msbuild for: " + NormalizeRawString(projectFile),
                 Path.GetDirectoryName(projectFile),
                 Path.Combine(outputDirectory, "msbuild0.out"),

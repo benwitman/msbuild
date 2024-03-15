@@ -1,10 +1,10 @@
 @echo off
 IF "%1" == "" ((echo Usage: dominobuild [testname]) & exit /B 1)
 
-set _Static_Bootstrap=%~dp0..\artifacts\bin\bootstrap\net472\MSBuild\Current\Bin
+set _Static_Bootstrap=%~dp0..\artifacts\bin\bootstrap\net472
 set _Static_Vars_Set=1
-set _Static_Artifacts_MsBuild=%_Static_Bootstrap%
-set _Static_Artifacts_MicrosoftBuildTargetLauncher=%_Static_Bootstrap%
+set _Static_Artifacts_MsBuild=%_Static_Bootstrap%\MSBuild\Current\Bin\amd64\MsBuild.exe
+set _Static_Artifacts_MicrosoftBuildTargetLauncher=%_Static_Bootstrap%\MSBuild\Current\Bin\amd64\Microsoft.Build.TaskLauncher.exe
 set _Static_Intermediate=%~dp0intermediate\%1
 set _Static_Intermediate_MetaBuildGraph=%_Static_Intermediate%\MetaBuildGraph
 set _Static_Intermediate_MetaBuildOutput=%_Static_Intermediate%\MetaBuildOutput
