@@ -1,6 +1,19 @@
 # Tests Readme
 This folder is self-contained MsBuild project files used for testing things
 
+## CSC Server
+Sometimes you may not see file accesses due to VBCSCompiler.exe.
+Setting UseSharedCompilation property to false disables this.
+
+## Using Private .NET SDK
+You can also set this to redirect the final SDK resolution to the private directory:
+```
+set TEST_CUSTOM_DOTNET=<..>\artifacts\bin\redist\debug\dotnet
+set TEST_CUSTOM_DOTNET_VERSION=8.0.202-dev
+```
+
+Setting `/p:MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER=<...>\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver\debug\net472` will include the custom Microsoft.DotNet.MSBuildSdkResolver from the other clone. 
+
 ## Commands
 The batch files are used to interact with tests:
 

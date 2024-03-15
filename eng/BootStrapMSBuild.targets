@@ -65,13 +65,18 @@
   </Target>
 
   <Target Name="BootstrapFull" DependsOnTargets="CleanBootstrapFolder;SetBinPaths;GatherNuGetDependencies">
+    <ItemGroup Condition="'$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' == ''">
+      <SdkResolverFiles Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\**\*.*" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' != ''">
+      <SdkResolverFiles Include="$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)\**\*.*" />
+    </ItemGroup>
     <ItemGroup>
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\*.targets" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\*.props" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\Tracker*.dll" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\Tracker*.exe" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\FileTracker*.dll" />
-      <SdkResolverFiles Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\**\*.*" />
       <NuGetSdkResolverManifest Include= "$(RepoRoot)src\MSBuild\SdkResolvers\VS\Microsoft.Build.NuGetSdkResolver.xml" Condition="'$(MonoBuild)' != 'true'" />
       <NuGetSdkResolverManifest Include= "$(RepoRoot)src\MSBuild\SdkResolvers\Standalone\Microsoft.Build.NuGetSdkResolver.xml" Condition="'$(MonoBuild)' == 'true'" />
       <InstalledSdks Include="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Sdks\**\*.*" />
