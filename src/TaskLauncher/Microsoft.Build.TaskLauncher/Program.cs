@@ -387,13 +387,23 @@ namespace Microsoft.Build.TaskLauncher
             };
 
             StringBuilder specContents = new StringBuilder();
-            specContents.AppendLine("import {Artifact, Cmd, Transformer} from \"Sdk.Transformers\";\n");
-            specContents.AppendLine(
-                string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ Transformer.sealSourceDirectory(d`{1}`, Transformer.SealSourceDirectoryOption.allDirectories) ] }};\n",
-                    msBuild,
-                    Path.GetDirectoryName(msBuild)));
-            specContents.AppendLine(
-                string.Format(@"const {0} = Transformer.execute(
+            specContents.AppendLine("import {Artifact, Cmd, Transformer} from \"Sdk.Transformers\";");
+            specContents.AppendLine(string.Format(@"
+const tool: Transformer.ToolDefinition = 
+{{
+    exe: f`{0}`,
+    dependsOnWindowsDirectories: true,
+    prepareTempDirectory: true,
+    runtimeDirectoryDependencies:
+    [
+        Transformer.sealSourceDirectory(d`{1}`, Transformer.SealSourceDirectoryOption.allDirectories)
+    ]
+}};",
+                msBuild,
+                Path.GetDirectoryName(msBuild)));
+
+            specContents.AppendLine(string.Format(@"
+const {0} = Transformer.execute(
 {{
     tool: tool,
     arguments: [ Cmd.rawArgument(""{1}"") ],
@@ -406,14 +416,15 @@ namespace Microsoft.Build.TaskLauncher
     unsafe: {{ passThroughEnvironmentVariables: [""MICROSOFT_BUILD_TASKLAUNCHER_DEBUG"", ""MSBUILDDEBUGONSTART""] }},
 }});
 ",
-                    "msbuild0",
-                    NormalizeRawString(projectFile),
-                    string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{envVar.Item2}\" }}")),
-                    "Running static msbuild for: " + NormalizeRawString(projectFile),
-                    Path.GetDirectoryName(projectFile),
-                    Path.Combine(outputDirectory, "msbuild0.out"),
-                    string.Join(",\n\t\t", inputs),
-                    string.Join(",\n\t\t", outputs)));
+                "msbuild0",
+                NormalizeRawString(projectFile),
+                string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{envVar.Item2}\" }}")),
+                "Running static msbuild for: " + NormalizeRawString(projectFile),
+                Path.GetDirectoryName(projectFile),
+                Path.Combine(outputDirectory, "msbuild0.out"),
+                string.Join(",\n\t\t", inputs),
+                string.Join(",\n\t\t", outputs)));
+
             string specFile = Path.Combine(graphDirectory, "spec.dsc");
             File.Delete(specFile);
             File.WriteAllText(specFile, specContents.ToString());
