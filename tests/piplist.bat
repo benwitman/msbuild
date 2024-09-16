@@ -1,6 +1,6 @@
 @echo off
-IF "%1" == "" ((echo Usage: getpips [testname] [Meta^|Product]) & exit /B 1)
-IF "%2" == "" ((echo Usage: getpips [testname] [Meta^|Product]) & exit /B 1)
+IF "%1" == "" ((echo Usage: piplist [testname] [Meta^|Product]) & exit /B 1)
+IF "%2" == "" ((echo Usage: piplist [testname] [Meta^|Product]) & exit /B 1)
 
 %PKGDOMINO%\bxlanalyzer.exe /m:DumpProcess /xl:%~dp0intermediate\%1\%2BuildGraph\Out\Logs\BuildXL.xlg /o:%~dp0intermediate\%1\%2BuildGraph\ProcessDump.xml
 echo %~dp0intermediate\%1\%2BuildGraph\ProcessDump.xml
