@@ -402,11 +402,17 @@ namespace Microsoft.Build.TaskLauncher
                 ("MSBUILDSTATIC", "1"),
                 ("MSBUILDSTATIC_OUTPUT", outputGraph),
                 ("ProgramData", Environment.GetEnvironmentVariable("ProgramData")),
-                ("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR", Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR")),
-                ("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotNetRoot)
             };
 
-            
+            if (!string.IsNullOrEmpty(dotNetRoot))
+            {
+                envVars.Add(("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotNetRoot));
+            }
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR")))
+            {
+                envVars.Add(("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR", Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR")));
+            }
 
             StringBuilder specContents = new StringBuilder();
             specContents.AppendLine("import {Artifact, Cmd, Transformer} from \"Sdk.Transformers\";");
