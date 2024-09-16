@@ -354,6 +354,7 @@ namespace Microsoft.Build.TaskLauncher
 ");
                 i++;
 
+                File.WriteAllText(Path.Combine(outputFolder, $"target.{target.Id}.json"), stdIn.ToString());
             }
 
             string specFile = Path.Combine(outputFolder, "spec.dsc");
