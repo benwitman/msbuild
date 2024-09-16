@@ -1,4 +1,4 @@
-setlocal
+@setlocal
 @echo off
 IF "%1" == "" ((echo Usage: dominobuild [testname]) & exit /B 1)
 
