@@ -115,6 +115,9 @@ namespace Microsoft.Build.BackEnd
         /// </summary>
         private string _projectRootDirectory;
 
+        public bool IsRecursiveCallTarget = false;
+        public StaticGraphBuilder StaticGraphBuilder;
+
         /// <summary>
         /// Creates a build request entry from a build request.
         /// </summary>
@@ -125,6 +128,11 @@ namespace Microsoft.Build.BackEnd
             ErrorUtilities.VerifyThrowArgumentNull(request, nameof(request));
             ErrorUtilities.VerifyThrowArgumentNull(requestConfiguration, nameof(requestConfiguration));
             ErrorUtilities.VerifyThrow(requestConfiguration.ConfigurationId == request.ConfigurationId, "Configuration id mismatch");
+
+            if (request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
+            {
+                StaticGraphBuilder = new StaticGraphBuilder(requestConfiguration.ProjectFullPath);
+            }
 
             GlobalLock = new Object();
             Request = request;
@@ -169,9 +177,6 @@ namespace Microsoft.Build.BackEnd
         /// Returns the overall result for this request.
         /// </summary>
         public BuildResult Result { get; private set; }
-
-        public bool IsStatic => GlobalIsStatic;
-        public static bool GlobalIsStatic = Environment.GetEnvironmentVariable("MSBUILDSTATIC") == "1";
 
         /// <summary>
         /// Returns the request builder.

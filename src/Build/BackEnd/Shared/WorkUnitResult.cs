@@ -79,8 +79,6 @@ namespace Microsoft.Build.BackEnd
             _exception = null;
         }
 
-        internal StaticTarget GeneratedStaticTarget { get; set; }
-
         /// <summary>
         /// Creates a work result with the specified result codes.
         /// </summary>

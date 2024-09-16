@@ -169,11 +169,9 @@ namespace Microsoft.Build.BackEnd
             // Now process the targets
             ITaskBuilder taskBuilder = _componentHost.GetComponent(BuildComponentType.TaskBuilder) as ITaskBuilder;
 
-            var staticGraph = new StaticGraph();
-            staticGraph.ProjectPath = _projectInstance.FullPath;
             try
             {
-                await ProcessTargetStack(taskBuilder, staticGraph.StaticTargets);
+                await ProcessTargetStack(taskBuilder);
             }
             finally
             {
@@ -191,18 +189,9 @@ namespace Microsoft.Build.BackEnd
                 throw new BuildAbortedException();
             }
 
-            if (entry.IsStatic)
-            {
-                using (var stream = new FileStream(Environment.GetEnvironmentVariable("MSBUILDSTATIC_OUTPUT"), FileMode.Create, FileAccess.ReadWrite, FileShare.Read))
-                {
-                    staticGraph.Files = SimulatedFileSystem.Instance.KnownFiles.ToList();
-                    new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(StaticGraph)).WriteObject(stream, staticGraph);
-                }
-            }
-
             // Gather up outputs for the requested targets and return those.  All of our information should be in the base lookup now.
             ComputeAfterTargetFailures(targetNames);
-            BuildResult resultsToReport = new BuildResult(_buildResult, targetNames);
+            BuildResult resultsToReport = new BuildResult(_buildResult, targetNames, _requestEntry.StaticGraphBuilder?.Finalize());
 
             // Return after-build project state if requested.
             if (_requestEntry.Request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.ProvideProjectStateAfterBuild))
@@ -258,7 +247,7 @@ namespace Microsoft.Build.BackEnd
         /// 2. The changes made by this target are NOT visible to the calling target.
         /// 3. Changes made by the calling target OVERRIDE changes made by this target.
         /// </remarks>
-        async Task<ITargetResult[]> ITargetBuilderCallback.LegacyCallTarget(string[] targets, bool continueOnError, ElementLocation taskLocation, List<StaticTarget.Task> tasks)
+        async Task<ITargetResult[]> ITargetBuilderCallback.LegacyCallTarget(string[] targets, bool continueOnError, ElementLocation taskLocation)
         {
             List<TargetSpecification> targetToPush = new List<TargetSpecification>();
             ITargetResult[] results = new TargetResult[targets.Length];
@@ -291,16 +280,11 @@ namespace Microsoft.Build.BackEnd
                     {
                         targetToPush.Clear();
                         targetToPush.Add(new TargetSpecification(targets[i], taskLocation));
-                        var staticTargets = new List<StaticTarget>();
 
                         // We push the targets one at a time to emulate the original CallTarget behavior.
                         bool pushed = await PushTargets(targetToPush, currentTargetEntry, callTargetLookup, false, true, TargetBuiltReason.None);
                         ErrorUtilities.VerifyThrow(pushed, "Failed to push any targets onto the stack.  Target: {0} Current Target: {1}", targets[i], currentTargetEntry.Target.Name);
-                        await ProcessTargetStack(taskBuilder, staticTargets);
-
-                        // todo hackathon; what about other things on this target?
-                        if (tasks != null)
-                            tasks.AddRange(staticTargets.SelectMany(t => t.Tasks));
+                        await ProcessTargetStack(taskBuilder);
 
                         if (!_cancellationToken.IsCancellationRequested)
                         {
@@ -420,7 +404,7 @@ namespace Microsoft.Build.BackEnd
         /// <summary>
         /// Processes the target stack until its empty or we hit a recursive break (due to CallTarget etc.)
         /// </summary>
-        private async Task ProcessTargetStack(ITaskBuilder taskBuilder, List<StaticTarget> staticTargets)
+        private async Task ProcessTargetStack(ITaskBuilder taskBuilder)
         {
             // Keep building while we have targets to build and haven't been canceled.
             bool stopProcessingStack = false;
@@ -505,7 +489,7 @@ namespace Microsoft.Build.BackEnd
 
                             // Execute all of the tasks on this target.
                             MSBuildEventSource.Log.TargetStart(currentTargetEntry.Name);
-                            await currentTargetEntry.ExecuteTarget(taskBuilder, _requestEntry, _projectLoggingContext, _cancellationToken, staticTargets);
+                            await currentTargetEntry.ExecuteTarget(taskBuilder, _requestEntry, _projectLoggingContext, _cancellationToken);
                             MSBuildEventSource.Log.TargetStop(currentTargetEntry.Name);
                         }
 

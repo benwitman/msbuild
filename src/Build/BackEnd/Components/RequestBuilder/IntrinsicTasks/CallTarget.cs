@@ -83,7 +83,7 @@ namespace Microsoft.Build.BackEnd
         /// Instructs the MSBuild engine to build one or more targets in the current project.
         /// </summary>
         /// <returns>true if all targets built successfully; false if any target fails</returns>
-        public Task<bool> ExecuteInternal(List<StaticTarget.Task> tasks)
+        public Task<bool> ExecuteInternal()
         {
             // Make sure the list of targets was passed in.
             if ((Targets == null) || (Targets.Length == 0))
@@ -113,8 +113,7 @@ namespace Microsoft.Build.BackEnd
                 targetOutputs: _targetOutputs,
                 unloadProjectsOnCompletion: false,
                 toolsVersion: null,
-                skipNonexistentTargets: false,
-                tasks: tasks);
+                skipNonexistentTargets: false);
         }
 
         #endregion

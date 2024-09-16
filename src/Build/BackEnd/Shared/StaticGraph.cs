@@ -188,4 +188,44 @@ namespace Microsoft.Build.BackEnd
         [DataMember]
         public string ProjectPath;
     }
+
+    public class StaticGraphBuilder
+    {
+        public SimulatedFileSystem SimulatedFileSystem;
+        public StaticGraph StaticGraph;
+        public StaticTarget? CurrentStaticTarget;
+
+        public StaticGraphBuilder(string projectPath)
+        {
+            StaticGraph = new StaticGraph() { ProjectPath = projectPath };
+            SimulatedFileSystem = new SimulatedFileSystem();
+        }
+
+        public StaticGraph Finalize()
+        {
+            ErrorUtilities.VerifyThrow(CurrentStaticTarget == null, "Still building a target");
+            ErrorUtilities.VerifyThrow(StaticGraph.Files == null, "Finalized twice");
+            StaticGraph.Files = SimulatedFileSystem.KnownFiles.ToList();
+            return StaticGraph;
+        }
+
+        public void StartTarget(string name, ElementLocation location)
+        {
+            ErrorUtilities.VerifyThrow(CurrentStaticTarget == null, "Still building a target");
+            CurrentStaticTarget = new StaticTarget() { Name = name, Location = location };
+        }
+
+        public void EndTarget()
+        {
+            ErrorUtilities.VerifyThrow(CurrentStaticTarget != null, "Not building a target");
+            StaticGraph.StaticTargets.Add(CurrentStaticTarget!);
+            CurrentStaticTarget = null;
+        }
+    }
+
+    public class StaticTargetDependencies
+    {
+        public IList<string> Inputs = new List<string>();
+        public IList<string> Outputs = new List<string>();
+    }
 }

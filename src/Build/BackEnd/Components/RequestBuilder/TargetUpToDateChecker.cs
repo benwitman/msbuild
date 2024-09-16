@@ -131,10 +131,9 @@ namespace Microsoft.Build.BackEnd
         internal DependencyAnalysisResult PerformDependencyAnalysis(
             ItemBucket bucket,
             bool question,
+            StaticTargetDependencies? staticTargetDependencies,
             out ItemDictionary<ProjectItemInstance> changedTargetInputs,
-            out ItemDictionary<ProjectItemInstance> upToDateTargetInputs,
-            out IList<string> staticFileInputs,
-            out IList<string> staticFileOutputs
+            out ItemDictionary<ProjectItemInstance> upToDateTargetInputs
         )
         {
             // Clear any old dependency analysis logging details
@@ -150,10 +149,7 @@ namespace Microsoft.Build.BackEnd
             changedTargetInputs = null;
             upToDateTargetInputs = null;
 
-            staticFileInputs = null;
-            staticFileOutputs = null;
-
-            if (BuildRequestEntry.GlobalIsStatic)
+            if (staticTargetDependencies != null)
             {
                 // In static mode, there's no such thing as a target being up to date
 
@@ -179,17 +175,14 @@ namespace Microsoft.Build.BackEnd
                     .Concat(GetItemSpecsFromItemVectors(itemVectorTransformsInTargetInputs))
                     .Concat(discreteItemsInTargetInputs.Values);
 
-                staticFileInputs = new List<string>();
-
                 foreach (string input in inputs.Select(path => FileUtilities.ItemSpecToFullPath(path, _project.Directory)))
                 {
-                    staticFileInputs.Add(input);
+                    staticTargetDependencies.Inputs.Add(input);
                 }
 
-                staticFileOutputs = new List<string>();
                 foreach (string output in targetOutputItemSpecs.Select(path => FileUtilities.ItemSpecToFullPath(path, _project.Directory)))
                 {
-                    staticFileOutputs.Add(output);
+                    staticTargetDependencies.Outputs.Add(output);
                 }
 
                 return DependencyAnalysisResult.FullBuild;

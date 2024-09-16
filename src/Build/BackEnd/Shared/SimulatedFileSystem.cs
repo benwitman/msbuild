@@ -13,9 +13,7 @@ namespace Microsoft.Build.BackEnd.Shared
         private readonly IDictionary<string, StaticFile> _pathToFileObject;
         private readonly List<StaticFile> _fileByIndex;
 
-        public static readonly SimulatedFileSystem Instance = new SimulatedFileSystem();
-
-        private SimulatedFileSystem()
+        public SimulatedFileSystem()
         {
             _pathToFileObject = new Dictionary<string, StaticFile>(StringComparer.OrdinalIgnoreCase);
             _fileByIndex = new List<StaticFile>();

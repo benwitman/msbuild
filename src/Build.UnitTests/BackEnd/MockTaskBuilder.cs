@@ -80,7 +80,7 @@ namespace Microsoft.Build.UnitTests.BackEnd
         /// <summary>
         /// Executes the task.
         /// </summary>
-        public Task<WorkUnitResult> ExecuteTask(TargetLoggingContext targetLoggingContext, BuildRequestEntry requestEntry, ITargetBuilderCallback targetBuilderCallback, ProjectTargetInstanceChild task, TaskExecutionMode mode, Lookup lookupForInference, Lookup lookupForExecution, CancellationToken cancellationToken, List<StaticTarget.Task> tasks)
+        public Task<WorkUnitResult> ExecuteTask(TargetLoggingContext targetLoggingContext, BuildRequestEntry requestEntry, ITargetBuilderCallback targetBuilderCallback, ProjectTargetInstanceChild task, TaskExecutionMode mode, Lookup lookupForInference, Lookup lookupForExecution, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.Build.UnitTests.BackEnd
                 if (String.Equals(taskInstance.Name, "CallTarget", StringComparison.OrdinalIgnoreCase))
                 {
                     taskInstance.GetParameter("Targets");
-                    targetBuilderCallback.LegacyCallTarget(taskInstance.GetParameter("Targets").Split(MSBuildConstants.SemicolonChar), false, taskInstance.Location, tasks);
+                    targetBuilderCallback.LegacyCallTarget(taskInstance.GetParameter("Targets").Split(MSBuildConstants.SemicolonChar), false, taskInstance.Location);
                 }
 
                 _taskNumber++;

@@ -84,6 +84,11 @@ namespace Microsoft.Build.Execution
         /// because those are more fatal.
         /// </summary>
         FailOnUnresolvedSdk = 1 << 7,
+
+        /// <summary>
+        /// PrecomputeMode
+        /// </summary>
+        PrecomputeMode = 1 << 8,
     }
 
     /// <summary>

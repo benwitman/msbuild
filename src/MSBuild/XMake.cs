@@ -1525,6 +1525,11 @@ namespace Microsoft.Build.CommandLine
                                     flags |= BuildRequestDataFlags.ProvideProjectStateAfterBuild;
                                 }
 
+                                if (Environment.GetEnvironmentVariable("MSBUILDSTATIC") == "1")
+                                {
+                                    flags |= BuildRequestDataFlags.PrecomputeMode;
+                                }
+
                                 if (graphBuildOptions != null)
                                 {
                                     graphBuildRequest = new GraphBuildRequestData(new[] { new ProjectGraphEntryPoint(projectFile, globalProperties) }, targets, null, flags, graphBuildOptions);
@@ -1577,6 +1582,15 @@ namespace Microsoft.Build.CommandLine
                                 {
                                     result = ExecuteBuild(buildManager, buildRequest);
                                     success = result.OverallResult == BuildResultCode.Success;
+
+                                    if (buildRequest.Flags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
+                                    {
+                                        var staticGraph = result.StaticGraph;
+                                        using (var stream = new FileStream(Environment.GetEnvironmentVariable("MSBUILDSTATIC_OUTPUT"), FileMode.Create, FileAccess.ReadWrite, FileShare.Read))
+                                        {
+                                            new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(BackEnd.StaticGraph)).WriteObject(stream, staticGraph);
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -411,7 +411,7 @@ namespace Microsoft.Build.BackEnd
         /// <summary>
         /// Runs all of the tasks for this target, batched as necessary.
         /// </summary>
-        internal async Task ExecuteTarget(ITaskBuilder taskBuilder, BuildRequestEntry requestEntry, ProjectLoggingContext projectLoggingContext, CancellationToken cancellationToken, List<StaticTarget> staticTargets)
+        internal async Task ExecuteTarget(ITaskBuilder taskBuilder, BuildRequestEntry requestEntry, ProjectLoggingContext projectLoggingContext, CancellationToken cancellationToken)
         {
             try
             {
@@ -462,10 +462,12 @@ namespace Microsoft.Build.BackEnd
                         Lookup lookupForInference;
                         Lookup lookupForExecution;
 
+                        StaticTargetDependencies staticTargetDependencies = _requestEntry.StaticGraphBuilder != null ? new StaticTargetDependencies() : null;
+
                         // UNDONE: (Refactor) Refactor TargetUpToDateChecker to take a logging context, not a logging service.
                         MSBuildEventSource.Log.TargetUpToDateStart();
                         TargetUpToDateChecker dependencyAnalyzer = new TargetUpToDateChecker(requestEntry.RequestConfiguration.Project, _target, targetLoggingContext.LoggingService, targetLoggingContext.BuildEventContext);
-                        DependencyAnalysisResult dependencyResult = dependencyAnalyzer.PerformDependencyAnalysis(bucket, _host.BuildParameters.Question, out changedTargetInputs, out upToDateTargetInputs, out var staticInputs, out var staticOutputs);
+                        DependencyAnalysisResult dependencyResult = dependencyAnalyzer.PerformDependencyAnalysis(bucket, _host.BuildParameters.Question, staticTargetDependencies, out changedTargetInputs, out upToDateTargetInputs);
                         MSBuildEventSource.Log.TargetUpToDateStop((int)dependencyResult);
 
                         switch (dependencyResult)
@@ -508,24 +510,7 @@ namespace Microsoft.Build.BackEnd
                                 }
 
                                 // We either have some work to do or at least we need to infer outputs from inputs.
-                                bucketResult = await ProcessBucket(taskBuilder, targetLoggingContext, GetTaskExecutionMode(dependencyResult), lookupForInference, lookupForExecution);
-
-                                if (requestEntry.IsStatic && bucketResult.GeneratedStaticTarget != null)
-                                {
-                                    var staticTarget = bucketResult.GeneratedStaticTarget;
-                                    staticTargets.Add(staticTarget);
-                                    foreach (var inputPath in staticInputs.Where(path => !string.IsNullOrWhiteSpace(path)))
-                                    {
-                                        long inputId = SimulatedFileSystem.Instance.GetFileId(inputPath);
-                                        staticTarget.RecordInput(inputId);
-                                    }
-
-                                    foreach (var outputPath in staticOutputs.Where(path => !string.IsNullOrWhiteSpace(path)))
-                                    {
-                                        long outputId = SimulatedFileSystem.Instance.RecordOutput(staticTarget, outputPath);
-                                        staticTarget.RecordOutput(outputId);
-                                    }
-                                }
+                                bucketResult = await ProcessBucket(taskBuilder, targetLoggingContext, GetTaskExecutionMode(dependencyResult), lookupForInference, lookupForExecution, staticTargetDependencies);
 
                                 // Now aggregate the result with the existing known results.  There are four rules, assuming the target was not
                                 // skipped due to being up-to-date:
@@ -624,7 +609,7 @@ namespace Microsoft.Build.BackEnd
                     if (!String.IsNullOrEmpty(targetReturns))
                     {
                         // Determine if we should keep duplicates.
-                        bool keepDupes = this.RequestEntry.IsStatic || ConditionEvaluator.EvaluateCondition(
+                        bool keepDupes = RequestEntry.StaticGraphBuilder != null || ConditionEvaluator.EvaluateCondition(
                                  _target.KeepDuplicateOutputs,
                                  ParserOptions.AllowPropertiesAndItemLists,
                                  _expander,
@@ -811,16 +796,36 @@ namespace Microsoft.Build.BackEnd
         /// <returns>
         /// The result of the tasks, based on the last task which ran.
         /// </returns>
-        private async Task<WorkUnitResult> ProcessBucket(ITaskBuilder taskBuilder, TargetLoggingContext targetLoggingContext, TaskExecutionMode mode, Lookup lookupForInference, Lookup lookupForExecution)
+        private async Task<WorkUnitResult> ProcessBucket(ITaskBuilder taskBuilder, TargetLoggingContext targetLoggingContext, TaskExecutionMode mode, Lookup lookupForInference, Lookup lookupForExecution, StaticTargetDependencies staticTargetDependencies)
         {
             WorkUnitResultCode aggregatedTaskResult = WorkUnitResultCode.Success;
             WorkUnitActionCode finalActionCode = WorkUnitActionCode.Continue;
             WorkUnitResult lastResult = new WorkUnitResult(WorkUnitResultCode.Success, WorkUnitActionCode.Continue, null);
 
-            List<StaticTarget.Task> staticTasks = new List<StaticTarget.Task>();
-
             try
             {
+                
+                if (_requestEntry.StaticGraphBuilder != null)
+                {
+                    if (!_requestEntry.IsRecursiveCallTarget)
+                    {
+                        _requestEntry.StaticGraphBuilder.StartTarget(Name, _target.Location);
+                    }
+
+                    var staticTarget = _requestEntry.StaticGraphBuilder.CurrentStaticTarget;
+                    foreach (var inputPath in staticTargetDependencies.Inputs.Where(path => !string.IsNullOrWhiteSpace(path)))
+                    {
+                        long inputId = _requestEntry.StaticGraphBuilder.SimulatedFileSystem.GetFileId(inputPath);
+                        staticTarget.RecordInput(inputId);
+                    }
+
+                    foreach (var outputPath in staticTargetDependencies.Outputs.Where(path => !string.IsNullOrWhiteSpace(path)))
+                    {
+                        long outputId = _requestEntry.StaticGraphBuilder.SimulatedFileSystem.RecordOutput(staticTarget, outputPath);
+                        staticTarget.RecordOutput(outputId);
+                    }
+                }
+
                 // Grab the task builder so if cancel is called it will have something to operate on.
                 _currentTaskBuilder = taskBuilder;
 
@@ -832,7 +837,7 @@ namespace Microsoft.Build.BackEnd
                     ProjectTargetInstanceChild targetChildInstance = _target.Children[currentTask];
 
                     // Execute the task.
-                    lastResult = await taskBuilder.ExecuteTask(targetLoggingContext, _requestEntry, _targetBuilderCallback, targetChildInstance, mode, lookupForInference, lookupForExecution, _cancellationToken, staticTasks);
+                    lastResult = await taskBuilder.ExecuteTask(targetLoggingContext, _requestEntry, _targetBuilderCallback, targetChildInstance, mode, lookupForInference, lookupForExecution, _cancellationToken);
 
                     if (lastResult.ResultCode == WorkUnitResultCode.Failed)
                     {
@@ -859,18 +864,13 @@ namespace Microsoft.Build.BackEnd
             finally
             {
                 _currentTaskBuilder = null;
+                if (!_requestEntry.IsRecursiveCallTarget)
+                {
+                    _requestEntry.StaticGraphBuilder?.EndTarget();
+                }
             }
 
-            StaticTarget staticTarget = null;
-            if (staticTasks.Count > 0)
-            {
-                staticTarget = new StaticTarget() { Location = _target.Location, Tasks = staticTasks, Name = Name };
-            }
-
-            return new WorkUnitResult(aggregatedTaskResult, finalActionCode, lastResult.Exception)
-            {
-                GeneratedStaticTarget = staticTarget,
-            };
+            return new WorkUnitResult(aggregatedTaskResult, finalActionCode, lastResult.Exception);
         }
 
         /// <summary>

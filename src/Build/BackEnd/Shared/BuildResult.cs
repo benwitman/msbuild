@@ -73,6 +73,11 @@ namespace Microsoft.Build.Execution
         private List<string> _defaultTargets;
 
         /// <summary>
+        /// Static Graph
+        /// </summary>
+        private StaticGraph _staticGraph;
+
+        /// <summary>
         /// The set of results for each target.
         /// </summary>
         private ConcurrentDictionary<string, TargetResult> _resultsByTarget;
@@ -162,7 +167,7 @@ namespace Microsoft.Build.Execution
         /// </summary>
         /// <param name="existingResults">The existing results.</param>
         /// <param name="targetNames">The target names whose results we will take from the existing results, if they exist.</param>
-        internal BuildResult(BuildResult existingResults, string[] targetNames)
+        internal BuildResult(BuildResult existingResults, string[] targetNames, StaticGraph staticGraph = null)
         {
             _submissionId = existingResults._submissionId;
             _configurationId = existingResults._configurationId;
@@ -172,6 +177,7 @@ namespace Microsoft.Build.Execution
             _requestException = existingResults._requestException;
             _resultsByTarget = CreateTargetResultDictionaryWithContents(existingResults, targetNames);
             _baseOverallResult = existingResults.OverallResult == BuildResultCode.Success;
+            _staticGraph = staticGraph;
 
             _circularDependency = existingResults._circularDependency;
         }
@@ -258,6 +264,16 @@ namespace Microsoft.Build.Execution
         private BuildResult(ITranslator translator)
         {
             ((ITranslatable)this).Translate(translator);
+        }
+
+        /// <summary>
+        /// Returns the StaticGraph.
+        /// </summary>
+        public StaticGraph StaticGraph
+        {
+            [DebuggerStepThrough]
+            get
+            { return _staticGraph; }
         }
 
         /// <summary>
@@ -581,6 +597,9 @@ namespace Microsoft.Build.Execution
             translator.Translate(ref _savedCurrentDirectory);
             translator.Translate(ref _schedulerInducedError);
             translator.TranslateDictionary(ref _savedEnvironmentVariables, StringComparer.OrdinalIgnoreCase);
+
+
+            ErrorUtilities.VerifyThrowArgumentNull(_staticGraph, nameof(_staticGraph));
         }
 
         /// <summary>
