@@ -31,5 +31,6 @@
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowVersion)" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
+    <PackageVersion Include="Microsoft.BuildXL.win-x64" Version="0.1.0-20240825.1" />
   </ItemGroup>
 </Project>
