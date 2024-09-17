@@ -205,6 +205,7 @@ namespace Microsoft.Build.BackEnd
         {
             ErrorUtilities.VerifyThrow(CurrentStaticTarget == null, "Still building a target");
             ErrorUtilities.VerifyThrow(StaticGraph.Files == null, "Finalized twice");
+            StaticGraph.StaticTargets = StaticGraph.StaticTargets.Where(t => t.Tasks.Any()).ToList();
             StaticGraph.Files = SimulatedFileSystem.KnownFiles.ToList();
             return StaticGraph;
         }
