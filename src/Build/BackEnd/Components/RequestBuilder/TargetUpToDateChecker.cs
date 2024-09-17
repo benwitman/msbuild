@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Build.BackEnd.Shared;
+
 using Microsoft.Build.Collections;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -133,8 +133,7 @@ namespace Microsoft.Build.BackEnd
             bool question,
             StaticTargetDependencies? staticTargetDependencies,
             out ItemDictionary<ProjectItemInstance> changedTargetInputs,
-            out ItemDictionary<ProjectItemInstance> upToDateTargetInputs
-        )
+            out ItemDictionary<ProjectItemInstance> upToDateTargetInputs)
         {
             // Clear any old dependency analysis logging details
             _dependencyAnalysisDetail.Clear();

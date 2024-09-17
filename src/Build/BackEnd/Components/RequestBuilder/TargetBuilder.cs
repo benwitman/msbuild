@@ -13,11 +13,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
 using BuildAbortedException = Microsoft.Build.Exceptions.BuildAbortedException;
-using System.Threading.Tasks;
-using Microsoft.Build.Framework;
-using System.IO;
-using System.Linq;
-using Microsoft.Build.BackEnd.Shared;
 using ElementLocation = Microsoft.Build.Construction.ElementLocation;
 using ProjectLoggingContext = Microsoft.Build.BackEnd.Logging.ProjectLoggingContext;
 using TaskItem = Microsoft.Build.Execution.ProjectItemInstance.TaskItem;
@@ -168,7 +163,6 @@ namespace Microsoft.Build.BackEnd
 
             // Now process the targets
             ITaskBuilder taskBuilder = _componentHost.GetComponent(BuildComponentType.TaskBuilder) as ITaskBuilder;
-
             try
             {
                 await ProcessTargetStack(taskBuilder);

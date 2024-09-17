@@ -366,8 +366,7 @@ namespace Microsoft.Build.BackEnd
                                                 _targetOutputs,
                                                 UnloadProjectsOnCompletion,
                                                 ToolsVersion,
-                                                SkipNonexistentTargets
-                                                );
+                                                SkipNonexistentTargets);
 
                         if (!executeResult)
                         {
@@ -438,8 +437,7 @@ namespace Microsoft.Build.BackEnd
                 _targetOutputs,
                 UnloadProjectsOnCompletion,
                 ToolsVersion,
-                SkipNonexistentTargets
-            );
+                SkipNonexistentTargets);
 
             if (!executeResult)
             {
