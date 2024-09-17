@@ -404,7 +404,7 @@ namespace Microsoft.Build.Tasks
         (
             CopyFileWithState copyFile,
             int parallelism,
-            bool staticEvaluation
+            bool staticEvaluation = false
         )
         {
             // If there are no source files then just return success.
