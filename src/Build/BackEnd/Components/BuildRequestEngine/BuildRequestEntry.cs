@@ -129,7 +129,10 @@ namespace Microsoft.Build.BackEnd
             ErrorUtilities.VerifyThrowArgumentNull(requestConfiguration, nameof(requestConfiguration));
             ErrorUtilities.VerifyThrow(requestConfiguration.ConfigurationId == request.ConfigurationId, "Configuration id mismatch");
 
-            if (request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
+            if (request.StaticGraphBuilder != null)
+            {
+                StaticGraphBuilder = request.StaticGraphBuilder;
+            } else if (request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
             {
                 StaticGraphBuilder = new StaticGraphBuilder(requestConfiguration.ProjectFullPath);
             }

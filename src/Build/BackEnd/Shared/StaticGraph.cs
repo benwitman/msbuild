@@ -215,6 +215,18 @@ namespace Microsoft.Build.BackEnd
             CurrentStaticTarget = new StaticTarget() { Name = name, Location = location };
         }
 
+        public StaticTarget PauseTarget()
+        {
+            try { return CurrentStaticTarget!; }
+            finally { CurrentStaticTarget = null; }
+        }
+
+        public void ResumeTarget(StaticTarget staticTarget)
+        {
+            ErrorUtilities.VerifyThrow(CurrentStaticTarget == null, "Still building a target");
+            CurrentStaticTarget = staticTarget;
+        }
+
         public void EndTarget()
         {
             ErrorUtilities.VerifyThrow(CurrentStaticTarget != null, "Not building a target");

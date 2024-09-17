@@ -1170,7 +1170,8 @@ namespace Microsoft.Build.BackEnd
                             parentRequest: issuingEntry.Request,
                             buildRequestDataFlags: buildRequestDataFlags,
                             requestedProjectState: null,
-                            skipStaticGraphIsolationConstraints: request.SkipStaticGraphIsolationConstraints);
+                            skipStaticGraphIsolationConstraints: request.SkipStaticGraphIsolationConstraints,
+                            staticGraphBuilder: issuingEntry.StaticGraphBuilder);
 
                         issuingEntry.WaitForResult(newRequest);
 

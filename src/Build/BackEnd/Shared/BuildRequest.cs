@@ -81,6 +81,11 @@ namespace Microsoft.Build.BackEnd
         private BuildEventContext _buildEventContext;
 
         /// <summary>
+        /// The build event context of this request
+        /// </summary>
+        private StaticGraphBuilder _staticGraphBuilder;
+
+        /// <summary>
         /// Whether or not the <see cref="BuildResult"/> issued in response to this request should include <see cref="BuildResult.ProjectStateAfterBuild"/>.
         /// </summary>
         private BuildRequestDataFlags _buildRequestDataFlags;
@@ -176,7 +181,8 @@ namespace Microsoft.Build.BackEnd
             BuildRequestDataFlags buildRequestDataFlags = BuildRequestDataFlags.None,
             RequestedProjectState requestedProjectState = null,
             bool skipStaticGraphIsolationConstraints = false,
-            int projectContextId = BuildEventContext.InvalidProjectContextId)
+            int projectContextId = BuildEventContext.InvalidProjectContextId,
+            StaticGraphBuilder staticGraphBuilder = null)
         : this(submissionId, nodeRequestId, configurationId, hostServices, buildRequestDataFlags, requestedProjectState, projectContextId)
         {
             ErrorUtilities.VerifyThrowArgumentNull(escapedTargets, "targets");
@@ -189,6 +195,7 @@ namespace Microsoft.Build.BackEnd
                 _targets.Add(EscapingUtilities.UnescapeAll(target));
             }
 
+            _staticGraphBuilder = staticGraphBuilder;
             _parentBuildEventContext = parentBuildEventContext;
             _parentGlobalRequestId = parentRequest?.GlobalRequestId ?? InvalidGlobalRequestId;
 
@@ -389,6 +396,16 @@ namespace Microsoft.Build.BackEnd
             [DebuggerStepThrough]
             get
             { return _parentGlobalRequestId == InvalidGlobalRequestId; }
+        }
+
+        /// <summary>
+        /// StaticGraphBuilder
+        /// </summary>
+        internal StaticGraphBuilder StaticGraphBuilder
+        {
+            [DebuggerStepThrough]
+            get
+            { return _staticGraphBuilder; }
         }
 
         /// <summary>

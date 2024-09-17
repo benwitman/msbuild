@@ -754,7 +754,9 @@ namespace Microsoft.Build.BackEnd
             {
                 if (host.TaskInstance is MSBuild msBuildTask)
                 {
+                    var current = _buildRequestEntry.StaticGraphBuilder.PauseTarget();
                     await msBuildTask.ExecuteInternal();
+                    _buildRequestEntry.StaticGraphBuilder.ResumeTarget(current);
                 }
                 else if (host.TaskInstance is CallTarget)
                 {
