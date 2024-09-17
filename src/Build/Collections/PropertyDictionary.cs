@@ -35,14 +35,14 @@ namespace Microsoft.Build.Collections
     /// </remarks>
     /// <typeparam name="T">Property or Metadata class type to store</typeparam>
     [DebuggerDisplay("#Entries={Count}")]
-    internal sealed class PropertyDictionary<T> : IEnumerable<T>, IEquatable<PropertyDictionary<T>>, IPropertyProvider<T>, IDictionary<string, T>
+    internal sealed class PropertyDictionary<T> : IEnumerable<T>, IEquatable<PropertyDictionary<T>>, IPropertyProvider<T>, IDictionary<string, T>, IConstrainableDictionary<T>
         where T : class, IKeyed, IValued, IEquatable<T>
     {
         /// <summary>
         /// Backing dictionary
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        private readonly RetrievableEntryHashSet<T> _properties;
+        private readonly IRetrievableEntryHashSet<T> _properties;
 
         /// <summary>
         /// Creates empty dictionary
@@ -93,6 +93,15 @@ namespace Microsoft.Build.Collections
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyDictionary{T}"/> class.
+        /// </summary>
+        /// <param name="propertiesHashSet">The collection of properties to use.</param>
+        internal PropertyDictionary(IRetrievableEntryHashSet<T> propertiesHashSet)
+        {
+            _properties = propertiesHashSet;
+        }
+
+        /// <summary>
         /// Accessor for the list of property names
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -126,16 +135,7 @@ namespace Microsoft.Build.Collections
         /// Returns the number of properties in the collection
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        int ICollection<KeyValuePair<string, T>>.Count
-        {
-            get
-            {
-                lock (_properties)
-                {
-                    return _properties.Count;
-                }
-            }
-        }
+        int ICollection<KeyValuePair<string, T>>.Count => Count;
 
         /// <summary>
         /// Whether the collection is read-only.
@@ -146,13 +146,13 @@ namespace Microsoft.Build.Collections
         /// <summary>
         /// Returns the number of property in the collection.
         /// </summary>
-        internal int Count
+        public int Count
         {
             get
             {
                 lock (_properties)
                 {
-                    return _properties.Count;
+                    return ((ICollection<T>)_properties).Count;
                 }
             }
         }
@@ -228,7 +228,7 @@ namespace Microsoft.Build.Collections
         {
             lock (_properties)
             {
-                _properties.Clear();
+                ((ICollection<T>)_properties).Clear();
             }
         }
 
@@ -316,6 +316,12 @@ namespace Microsoft.Build.Collections
             {
                 return _properties.Get(name, startIndex, endIndex - startIndex + 1);
             }
+        }
+
+        /// <inheritdoc />
+        public T Get(string keyString, int startIndex, int endIndex)
+        {
+            return GetProperty(keyString, startIndex, endIndex);
         }
 
         #region IDictionary<string,T> Members
@@ -424,13 +430,7 @@ namespace Microsoft.Build.Collections
         /// </summary>
         IEnumerator<KeyValuePair<string, T>> IEnumerable<KeyValuePair<string, T>>.GetEnumerator()
         {
-            lock (_properties)
-            {
-                foreach (var entry in _properties)
-                {
-                    yield return new KeyValuePair<string, T>(entry.Key, entry);
-                }
-            }
+            return ((IEnumerable<KeyValuePair<string, T>>)_properties).GetEnumerator();
         }
 
         #endregion
@@ -500,7 +500,7 @@ namespace Microsoft.Build.Collections
         {
             lock (_properties)
             {
-                var dictionary = new Dictionary<string, string>(_properties.Count, MSBuildNameIgnoreCaseComparer.Default);
+                var dictionary = new Dictionary<string, string>(((ICollection<T>)_properties).Count, MSBuildNameIgnoreCaseComparer.Default);
 
                 foreach (T property in this)
                 {
@@ -515,7 +515,7 @@ namespace Microsoft.Build.Collections
         {
             lock (_properties)
             {
-                foreach (var kvp in _properties)
+                foreach (var kvp in (ICollection<T>)_properties)
                 {
                     keyValueCallback(kvp.Key, EscapingUtilities.UnescapeAll(kvp.EscapedValue));
                 }
@@ -527,7 +527,7 @@ namespace Microsoft.Build.Collections
             List<TResult> result = new();
             lock (_properties)
             {
-                foreach (T property in _properties)
+                foreach (T property in (ICollection<T>)_properties)
                 {
                     if (filter(property))
                     {
