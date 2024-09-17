@@ -1514,22 +1514,23 @@ namespace Microsoft.Build.CommandLine
                             // approach.
                             GraphBuildRequestData graphBuildRequest = null;
                             BuildRequestData buildRequest = null;
+                            BuildRequestDataFlags precomputeFlags = BuildRequestDataFlags.None;
+
+                            if (Environment.GetEnvironmentVariable("MSBUILDSTATIC") == "1")
+                            {
+                                precomputeFlags |= BuildRequestDataFlags.PrecomputeMode;
+                            }
+
                             if (!restoreOnly)
                             {
                                 // By default, the project state is thrown out after a build. The ProvideProjectStateAfterBuild flag adds the project state after build
                                 // to the BuildResult passed back at the end of the build. This can then be used to find the value of properties, items, etc. after the
                                 // build is complete.
-                                BuildRequestDataFlags flags = BuildRequestDataFlags.None;
+                                BuildRequestDataFlags flags = precomputeFlags;
                                 if (saveProjectResult)
                                 {
                                     flags |= BuildRequestDataFlags.ProvideProjectStateAfterBuild;
                                 }
-
-                                if (Environment.GetEnvironmentVariable("MSBUILDSTATIC") == "1")
-                                {
-                                    flags |= BuildRequestDataFlags.PrecomputeMode;
-                                }
-
                                 if (graphBuildOptions != null)
                                 {
                                     graphBuildRequest = new GraphBuildRequestData(new[] { new ProjectGraphEntryPoint(projectFile, globalProperties) }, targets, null, flags, graphBuildOptions);
@@ -1542,7 +1543,7 @@ namespace Microsoft.Build.CommandLine
 
                             if (enableRestore || restoreOnly)
                             {
-                                result = ExecuteRestore(projectFile, toolsVersion, buildManager, restoreProperties.Count > 0 ? restoreProperties : globalProperties, saveProjectResult: saveProjectResult);
+                                result = ExecuteRestore(projectFile, toolsVersion, buildManager, restoreProperties.Count > 0 ? restoreProperties : globalProperties, saveProjectResult: saveProjectResult, precomputeFlags: precomputeFlags);
 
                                 if (result.OverallResult != BuildResultCode.Success)
                                 {
@@ -1772,7 +1773,7 @@ namespace Microsoft.Build.CommandLine
             return submission.Execute();
         }
 
-        private static BuildResult ExecuteRestore(string projectFile, string toolsVersion, BuildManager buildManager, Dictionary<string, string> globalProperties, bool saveProjectResult = false)
+        private static BuildResult ExecuteRestore(string projectFile, string toolsVersion, BuildManager buildManager, Dictionary<string, string> globalProperties, BuildRequestDataFlags precomputeFlags, bool saveProjectResult = false)
         {
             // Make a copy of the global properties
             Dictionary<string, string> restoreGlobalProperties = new Dictionary<string, string>(globalProperties);
@@ -1789,7 +1790,12 @@ namespace Microsoft.Build.CommandLine
             //     make available an import that doesn't exist yet and the <Import /> might be missing a condition.
             //  - BuildRequestDataFlags.FailOnUnresolvedSdk to still fail in the case when an MSBuild project SDK can't be resolved since this is fatal and should
             //     fail the build.
-            BuildRequestDataFlags flags = BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk;
+            BuildRequestDataFlags flags =
+                BuildRequestDataFlags.ClearCachesAfterBuild |
+                BuildRequestDataFlags.SkipNonexistentTargets |
+                BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports |
+                BuildRequestDataFlags.FailOnUnresolvedSdk |
+                precomputeFlags;
             if (saveProjectResult)
             {
                 flags |= BuildRequestDataFlags.ProvideProjectStateAfterBuild;
