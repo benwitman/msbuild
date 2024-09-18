@@ -19,7 +19,7 @@ set TEST_CUSTOM_DOTNET=<..>\artifacts\bin\redist\debug\dotnet
 set TEST_CUSTOM_DOTNET_VERSION=8.0.202-dev
 ```
 
-Setting `/p:MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER=<...>\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver\debug\net472` will include the custom Microsoft.DotNet.MSBuildSdkResolver from the other clone. 
+Setting `/p:MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER=<...>\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver\debug\net472` during the build of `MsBuild.Bootstrap` will use  Microsoft.DotNet.MSBuildSdkResolver from the other build instead of using the one from the current MsBuild install.
 
 ## Commands
 The batch files are used to interact with tests:
