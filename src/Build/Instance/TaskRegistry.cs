@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Build.BackEnd;
+using Microsoft.Build.BackEnd.Components.Logging;
 using Microsoft.Build.BackEnd.Logging;
 using Microsoft.Build.Collections;
 using Microsoft.Build.Construction;
@@ -449,6 +450,27 @@ namespace Microsoft.Build.Execution
             return initialCount == null
                 ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, string>(initialCount.Value, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void SetPrecomputationMode(string taskName, string taskMode, EvaluationLoggingContext targetLoggingContext, ElementLocation elementLocation)
+        {
+            // If there are no usingtask tags in the project don't bother caching or looking for tasks locally
+            var records = GetRelevantOrderedRegistrations(new RegisteredTaskIdentity(taskName, null), false);
+
+            if (records.Any())
+            {
+                foreach(var record in records)
+                {
+                    record.PrecomputationMode = taskMode;
+                }
+            }
+            else
+            {
+                targetLoggingContext.LogError(
+                        new BuildEventFileInfo(elementLocation),
+                        "PlaceHolderError",
+                        "Did not find task");
+            }
         }
 
         /// <summary>
@@ -1158,6 +1180,8 @@ namespace Microsoft.Build.Execution
             /// </summary>
             private int _registrationOrderId;
 
+            public string PrecomputationMode;
+
             /// <summary>
             /// Constructor
             /// </summary>
@@ -1547,6 +1571,7 @@ namespace Microsoft.Build.Execution
                     }
 
                     _taskFactoryWrapperInstance = new TaskFactoryWrapper(factory, loadedType, RegisteredName, TaskFactoryParameters);
+                    _taskFactoryWrapperInstance.PrecomputationMode = PrecomputationMode;
                 }
 
                 return true;

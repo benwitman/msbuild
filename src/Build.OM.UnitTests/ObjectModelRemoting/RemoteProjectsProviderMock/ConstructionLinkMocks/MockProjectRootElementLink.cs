@@ -295,6 +295,10 @@ namespace Microsoft.Build.UnitTests.OM.ObjectModelRemoting
         {
             return (ProjectUsingTaskElement)this.Proxy.CreateUsingTaskElement(taskName, assemblyFile, assemblyName, runtime, architecture).Import(this.Linker);
         }
+        public override ProjectUsingTaskPrecomputationModeElement CreateUsingTaskPrecomputationModeElement(string taskName, string taskMode)
+        {
+            throw new NotImplementedException();
+        }
         public override UsingTaskParameterGroupElement CreateUsingTaskParameterGroupElement()
         {
             return (UsingTaskParameterGroupElement)this.Proxy.CreateUsingTaskParameterGroupElement().Import(this.Linker);

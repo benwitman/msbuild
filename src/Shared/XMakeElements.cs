@@ -20,6 +20,7 @@ namespace Microsoft.Build.Shared
         internal const string itemGroup = "ItemGroup";
         internal const string itemDefinitionGroup = "ItemDefinitionGroup";
         internal const string usingTask = "UsingTask";
+        internal const string usingTaskPrecomputationMode = "UsingTaskPrecomputationMode";
         internal const string projectExtensions = "ProjectExtensions";
         internal const string onError = "OnError";
         internal const string error = "Error";
@@ -47,6 +48,7 @@ namespace Microsoft.Build.Shared
             XMakeElements.output,
             XMakeElements.itemGroup,
             XMakeElements.usingTask,
+            XMakeElements.usingTaskPrecomputationMode,
             XMakeElements.projectExtensions,
             XMakeElements.onError,
             // XMakeElements.import "Import" items are used by Visual Basic projects

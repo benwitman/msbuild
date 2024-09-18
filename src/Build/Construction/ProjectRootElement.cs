@@ -1444,6 +1444,17 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
+        /// Creates a using task.
+        /// Caller must add it to the location of choice in the project.
+        /// Exactly one of assembly file and assembly name must be provided.
+        /// Also allows providing optional runtime and architecture specifiers.  Null is OK.
+        /// </summary>
+        public ProjectUsingTaskPrecomputationModeElement CreateUsingTaskPrecomputationModeElement(string taskName, string taskMode)
+        {
+            return Link != null ? RootLink.CreateUsingTaskPrecomputationModeElement(taskName, taskMode) : ProjectUsingTaskPrecomputationModeElement.CreateDisconnected(taskName, taskMode, this);
+        }
+
+        /// <summary>
         /// Creates a ParameterGroup for use in a using task.
         /// Caller must add it to the location of choice in the project under a using task.
         /// </summary>

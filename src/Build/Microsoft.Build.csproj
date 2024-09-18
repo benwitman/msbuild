@@ -443,6 +443,7 @@
     <Compile Include="Construction\ProjectTargetElement.cs" />
     <Compile Include="Construction\ProjectTaskElement.cs" />
     <Compile Include="Construction\ProjectUsingTaskElement.cs" />
+    <Compile Include="Construction\ProjectUsingTaskPrecomputationModeElement.cs" />
     <Compile Include="Construction\ProjectRootElement.cs" />
     <Compile Include="Construction\ProjectChooseElement.cs" />
     <Compile Include="Construction\ProjectWhenElement.cs" />

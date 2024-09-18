@@ -51,6 +51,11 @@ namespace Microsoft.Build.Construction
         private static readonly HashSet<string> ValidAttributesOnUsingTask = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.taskName, XMakeAttributes.assemblyFile, XMakeAttributes.assemblyName, XMakeAttributes.taskFactory, XMakeAttributes.architecture, XMakeAttributes.runtime, XMakeAttributes.requiredPlatform, XMakeAttributes.requiredRuntime, XMakeAttributes.overrideUsingTask };
 
         /// <summary>
+        /// Valid attributes on usingtask element
+        /// </summary>
+        private static readonly HashSet<string> ValidAttributesOnUsingTaskPrecomputationMode = new HashSet<string> { XMakeAttributes.taskName, XMakeAttributes.taskMode };
+
+        /// <summary>
         /// Valid attributes on target element
         /// </summary>
         private static readonly HashSet<string> ValidAttributesOnTarget = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.name, XMakeAttributes.inputs, XMakeAttributes.outputs, XMakeAttributes.keepDuplicateOutputs, XMakeAttributes.dependsOnTargets, XMakeAttributes.beforeTargets, XMakeAttributes.afterTargets, XMakeAttributes.returns };
@@ -174,6 +179,10 @@ namespace Microsoft.Build.Construction
 
                     case XMakeElements.usingTask:
                         _project.AppendParentedChildNoChecks(ParseProjectUsingTaskElement(childElement));
+                        break;
+
+                    case XMakeElements.usingTaskPrecomputationMode:
+                        _project.AppendParentedChildNoChecks(ParseProjectUsingTaskPrecomputationModeElement(childElement));
                         break;
 
                     case XMakeElements.target:
@@ -564,6 +573,25 @@ namespace Microsoft.Build.Construction
             }
 
             return usingTask;
+        }
+
+        /// <summary>
+        /// Parse a ParseProjectUsingTaskPrecomputationModeElement
+        /// </summary>
+        private ProjectUsingTaskPrecomputationModeElement ParseProjectUsingTaskPrecomputationModeElement(XmlElementWithLocation element)
+        {
+            ProjectXmlUtilities.VerifyThrowProjectAttributes(element, ValidAttributesOnUsingTaskPrecomputationMode);
+            ProjectErrorUtilities.VerifyThrowInvalidProject(element.GetAttribute(XMakeAttributes.taskName).Length > 0, element.Location, "ProjectTaskNameEmpty");
+
+            string taskMode = element.GetAttribute(XMakeAttributes.taskMode);
+
+            ProjectErrorUtilities.VerifyThrowInvalidProject(
+                (taskMode.Length > 0),
+                element.Location,
+                "PlaceHolderError",
+                $"Bad UsingTaskPrecomputationMode");
+
+            return new ProjectUsingTaskPrecomputationModeElement(element, _project, _project);
         }
 
         /// <summary>

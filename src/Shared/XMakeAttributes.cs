@@ -43,6 +43,7 @@ namespace Microsoft.Build.Shared
         internal const string assemblyName = "AssemblyName";
         internal const string assemblyFile = "AssemblyFile";
         internal const string taskName = "TaskName";
+        internal const string taskMode = "TaskMode";
         internal const string continueOnError = "ContinueOnError";
         internal const string project = "Project";
         internal const string taskParameter = "TaskParameter";

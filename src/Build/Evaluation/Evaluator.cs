@@ -96,6 +96,14 @@ namespace Microsoft.Build.Evaluation
         private readonly List<KeyValuePair<string, ProjectUsingTaskElement>> _usingTaskElements;
 
         /// <summary>
+        /// List of ProjectUsingTaskElement's traversing into imports.
+        /// Gathered during the first pass to avoid traversing again.
+        /// Key is the directory of the file importing the usingTask, which is needed
+        /// to handle any relative paths in the usingTask.
+        /// </summary>
+        private readonly List<KeyValuePair<string, ProjectUsingTaskPrecomputationModeElement>> _usingTaskPrecomputationModeElements;
+
+        /// <summary>
         /// List of ProjectTargetElement's traversing into imports.
         /// Gathered during the first pass to avoid traversing again.
         /// </summary>
@@ -245,6 +253,7 @@ namespace Microsoft.Build.Evaluation
             _itemGroupElements = new List<ProjectItemGroupElement>();
             _itemDefinitionGroupElements = new List<ProjectItemDefinitionGroupElement>();
             _usingTaskElements = new List<KeyValuePair<string, ProjectUsingTaskElement>>();
+            _usingTaskPrecomputationModeElements = new List<KeyValuePair<string, ProjectUsingTaskPrecomputationModeElement>>();
             _targetElements = new List<ProjectTargetElement>();
             _importsSeen = new Dictionary<string, ProjectImportElement>(StringComparer.OrdinalIgnoreCase);
             _initialTargetsList = new List<string>();
@@ -714,6 +723,11 @@ namespace Microsoft.Build.Evaluation
                         _expander,
                         ExpanderOptions.ExpandPropertiesAndItems,
                         _evaluationContext.FileSystem);
+
+                    foreach (var usingTaskPrecomputation in _usingTaskPrecomputationModeElements)
+                    {
+                        _data.TaskRegistry.SetPrecomputationMode(usingTaskPrecomputation.Value.TaskName, usingTaskPrecomputation.Value.TaskMode, _evaluationLoggingContext, usingTaskPrecomputation.Value.Location);
+                    }
                 }
 
                 // If there was no DefaultTargets attribute found in the depth first pass,
@@ -908,6 +922,9 @@ namespace Microsoft.Build.Evaluation
                             break;
                         case ProjectUsingTaskElement usingTask:
                             _usingTaskElements.Add(new KeyValuePair<string, ProjectUsingTaskElement>(currentProjectOrImport.DirectoryPath, usingTask));
+                            break;
+                        case ProjectUsingTaskPrecomputationModeElement usingTaskPrecomputationMode:
+                            _usingTaskPrecomputationModeElements.Add(new KeyValuePair<string, ProjectUsingTaskPrecomputationModeElement>(currentProjectOrImport.DirectoryPath, usingTaskPrecomputationMode));
                             break;
                         case ProjectChooseElement choose:
                             EvaluateChooseElement(choose);

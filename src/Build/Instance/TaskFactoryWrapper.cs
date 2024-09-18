@@ -104,6 +104,8 @@ namespace Microsoft.Build.Execution
             private set;
         }
 
+        public string PrecomputationMode;
+
         /// <summary>
         /// The task factory wrapped by the wrapper
         /// </summary>
