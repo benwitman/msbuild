@@ -37,6 +37,8 @@ The batch files are used to interact with tests:
 `dominorerunmeta`: re-runs a metabuild for a given test usually to expirement/debug the buildxl build.
 `dominorerunproduct`: re-runs a productbuild for a given test usually to expirement/debug the buildxl build.
 
+`binlog`: opens a binary log with the structured viewer.
+
 ## Tests
 These are the tests in increasing complexity:
 
