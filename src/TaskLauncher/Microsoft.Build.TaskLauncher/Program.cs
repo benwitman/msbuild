@@ -392,9 +392,12 @@ namespace Microsoft.Build.TaskLauncher
 
             var outputGraph = $"{outputDirectory}\\graph.json";
 
+            var binaryLog = $"{outputDirectory}\\log.binlog";
+
             List<string> outputs = new List<string>()
             {
-                $"f`{outputGraph}`"
+                $"f`{outputGraph}`",
+                $"f`{binaryLog}`",
             };
 
             List<(string, string)> envVars = new List<(string, string)>()
@@ -433,18 +436,19 @@ Transformer.sealSourceDirectory(d`{0}`, Transformer.SealSourceDirectoryOption.al
 const {0} = Transformer.execute(
 {{
     tool: tool,
-    arguments: [ Cmd.rawArgument(""{1}""), Cmd.rawArgument(""/restore"") ],
-    environmentVariables: [{2}],
-    description: ""{3}"",
-    workingDirectory: d`{4}`,
-    consoleOutput: p`{5}`,
-    dependencies: [{6}],
-    implicitOutputs: [{7}],
+    arguments: [ Cmd.rawArgument(""{1}""), Cmd.rawArgument(""/restore""), Cmd.rawArgument(""/bl:{2}"") ],
+    environmentVariables: [{3}],
+    description: ""{4}"",
+    workingDirectory: d`{5}`,
+    consoleOutput: p`{6}`,
+    dependencies: [{7}],
+    implicitOutputs: [{8}],
     unsafe: {{ passThroughEnvironmentVariables: [""MICROSOFT_BUILD_TASKLAUNCHER_DEBUG"", ""MSBUILDDEBUGONSTART""] }},
 }});
 ",
                 "msbuild0",
                 NormalizeRawString(projectFile),
+                NormalizeRawString(binaryLog),
                 string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{NormalizeRawString(envVar.Item2)}\" }}")),
                 "Running static msbuild for: " + NormalizeRawString(projectFile),
                 Path.GetDirectoryName(projectFile),
