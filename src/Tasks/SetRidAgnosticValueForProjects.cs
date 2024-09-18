@@ -9,7 +9,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.Build.Tasks
 {
-    public sealed class SetRidAgnosticValueForProjects : TaskExtension
+    public sealed class SetRidAgnosticValueForProjects : TaskExtension, ITaskStatic
     {
         public ITaskItem[] Projects { get; set; } = Array.Empty<ITaskItem>();
 
