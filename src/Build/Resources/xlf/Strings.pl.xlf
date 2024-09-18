@@ -408,6 +408,11 @@
         <target state="translated">Utworzono zastąpienie przy użyciu zadania: {0} o {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">Zamykanie wtyczki pamięci podręcznej projektu.</target>

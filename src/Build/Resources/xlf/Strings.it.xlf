@@ -408,6 +408,11 @@
         <target state="translated">È stata creata una sostituzione con l'attività: {0} in {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">Arresto del plug-in della cache del progetto.</target>

@@ -408,6 +408,11 @@
         <target state="translated">다음 작업을 사용하여 재정의를 만들었습니다. {1}의 {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">프로젝트 캐시 플러그인을 종료합니다.</target>

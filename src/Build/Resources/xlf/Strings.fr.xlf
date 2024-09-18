@@ -408,6 +408,11 @@
         <target state="translated">Remplacement créé à l’aide de la tâche : {0} au {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">Arrêt du plug-in du cache de projet.</target>

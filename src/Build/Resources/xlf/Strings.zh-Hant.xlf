@@ -408,6 +408,11 @@
         <target state="translated">已使用下列工作建立覆寫: 於 {1} 的 {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">正在關閉專案快取外掛程式。</target>

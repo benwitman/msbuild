@@ -408,6 +408,11 @@
         <target state="translated">Vytvořilo se přepsání pomocí úlohy: {0} v {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlaceHolderError">
+        <source>HACKATHONPLACEHOLDER: {0}</source>
+        <target state="new">HACKATHONPLACEHOLDER: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectCacheEndBuild">
         <source>Shutting down project cache plugin.</source>
         <target state="translated">Vypíná se modul plug-in mezipaměti projektu.</target>
