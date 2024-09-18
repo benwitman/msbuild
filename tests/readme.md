@@ -49,3 +49,4 @@ These are the tests in increasing complexity:
 `ConsoleApp1`: VS .NET Framework Template
 `ConsoleApp1HintPath`: VS .NET Framework Template with a Reference using a HintPath
 `msbuild-task-echo`: Runs two targets, one in a recursive MsBuild task and one in the top-level MsBuild task.
+`target-batch`: Target that does batching over an ItemGroup
