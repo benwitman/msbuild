@@ -834,7 +834,7 @@ namespace Microsoft.Build.BackEnd
 
                                     foreach (var kvp in parametersAsInputsOutputs)
                                     {
-                                        if (string.IsNullOrEmpty(kvp.Value))
+                                        if (string.IsNullOrEmpty(kvp.Value) || kvp.Value == "Skip")
                                         {
                                             continue;
                                         }
@@ -1262,9 +1262,9 @@ namespace Microsoft.Build.BackEnd
 
                     if (parametersAsInputsOutputs != null)
                     {
-                        if (parametersAsInputsOutputs.ContainsKey(taskParameterName) || !string.IsNullOrEmpty(taskOutputItemInstance.PrecomputationMode))
+                        if (!string.IsNullOrEmpty(taskOutputItemInstance.PrecomputationMode))
                         {
-                            parametersAsInputsOutputs[taskParameterName] = taskOutputItemInstance.PrecomputationMode ?? string.Empty;
+                            parametersAsInputsOutputs[taskParameterName] = taskOutputItemInstance.PrecomputationMode;
                         }
                     }
 
