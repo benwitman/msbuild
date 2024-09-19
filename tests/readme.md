@@ -56,6 +56,7 @@ These are the tests in increasing complexity:
 `exec-two`: single target with two Execs and no outputs
 `exec-in-out`: single target with declared input and output running an exec to do a copy
 `copy-list`: single target with declared many inputs and outputs using Copy task to do the copy
+`copy-list`: single target with Copy task determining inputs/outputs automatically
 `assigntargetpath-message`: single target that uses a custom task using ITaskStatic
 `calltarget`: single target using special CallTarget Task to re-use another target
 `ConsoleApp1`: VS .NET Framework Template
