@@ -15,6 +15,8 @@
 
     <!-- Disable build acceleration for this non-standard project. The Bootstrap target must run after any of the dependencies changes.  -->
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+    <BOOTSTRAP_DOTNET_INSTALL_LOCATION Condition="'$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)' == ''">$(DOTNET_INSTALL_DIR)</BOOTSTRAP_DOTNET_INSTALL_LOCATION>
+    <BOOTSTRAP_DOTNET_INSTALL_VERSION Condition="'$(BOOTSTRAP_DOTNET_INSTALL_VERSION)' == ''">$(DotNetCliVersion)</BOOTSTRAP_DOTNET_INSTALL_VERSION>
   </PropertyGroup>
 
   <Target Name="Bootstrap" DependsOnTargets="$(BootstrapDependsOn)"
@@ -42,7 +44,7 @@
         <!-- NuGet.Build.Tasks.Console.exe will be in the None ItemGroup -->
         <_NuGetRuntimeDependencies Include="%(None.Identity)" Condition="'@(None->Contains('NuGet.'))' == 'true'" />
 
-        <_NuGetRuntimeDependencies Include="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\RuntimeIdentifierGraph.json" />
+        <_NuGetRuntimeDependencies Include="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\RuntimeIdentifierGraph.json" />
     </ItemGroup>
   </Target>
 
@@ -76,7 +78,7 @@
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\Tracker*.exe" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\FileTracker*.dll" />
       <NuGetSdkResolverManifest Include="$(RepoRoot)src\MSBuild\SdkResolvers\VS\Microsoft.Build.NuGetSdkResolver.xml" />
-      <InstalledSdks Include="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Sdks\**\*.*" />
+      <InstalledSdks Include="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Sdks\**\*.*" />
 
       <InstalledStaticAnalysisTools Include="$(VsInstallRoot)\Team Tools\Static Analysis Tools\**\*.*" />
 
@@ -222,8 +224,8 @@
       <DeployedItems Include="$(PublishDir)\**\*.*" />
 
       <NuGetSdkResolverManifest Include= "$(RepoRoot)src\MSBuild\SdkResolvers\Standalone\Microsoft.Build.NuGetSdkResolver.xml" />
-      <InstalledSdks Include="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Sdks\**\*.*" />
-      <InstalledExtensions Include="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Current\**\*.*" Exclude="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Current\Microsoft.Common.props" />
+      <InstalledSdks Include="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Sdks\**\*.*" />
+      <InstalledExtensions Include="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Current\**\*.*" Exclude="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Current\Microsoft.Common.props" />
     </ItemGroup>
     <Copy SourceFiles="@(DeployedItems)"
           DestinationFolder="$(BootstrapDestination)%(RecursiveDir)" />
@@ -242,7 +244,7 @@
 
          Copy it from "next to MSBuild" in the pre-bootstrap SDK to our little weirdo bootstrap
          layout next to the SDK tasks, so it can get loaded by the SDK tasks that need it. -->
-    <Copy SourceFiles="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Microsoft.Extensions.DependencyModel.dll"
+    <Copy SourceFiles="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Microsoft.Extensions.DependencyModel.dll"
           DestinationFolder="$(BootstrapDestination)Sdks\Microsoft.NET.Sdk\tools\$(LatestDotNetCoreForMSBuild)" />
 
     <Copy SourceFiles="@(InstalledExtensions)"
