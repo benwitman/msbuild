@@ -52,6 +52,10 @@ namespace Microsoft.Build.Execution
         private string _msbuildArchitecture;
 
         /// <summary>
+        /// </summary>
+        private string _precomputationMode;
+
+        /// <summary>
         /// Unordered set of task parameter names and unevaluated values.
         /// This is a dead, read-only collection.
         /// </summary>
@@ -107,6 +111,7 @@ namespace Microsoft.Build.Execution
             _continueOnError = element.ContinueOnError;
             _msbuildArchitecture = element.MSBuildArchitecture;
             _msbuildRuntime = element.MSBuildRuntime;
+            _precomputationMode = element.PrecomputationMode;
             _location = element.Location;
             _conditionLocation = element.ConditionLocation;
             _continueOnErrorLocation = element.ContinueOnErrorLocation;
@@ -216,6 +221,13 @@ namespace Microsoft.Build.Execution
         public string MSBuildRuntime
         {
             get { return _msbuildRuntime; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public string PrecomputationMode
+        {
+            get { return _precomputationMode; }
         }
 
         /// <summary>

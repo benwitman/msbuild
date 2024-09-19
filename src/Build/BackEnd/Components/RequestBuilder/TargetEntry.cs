@@ -818,9 +818,16 @@ namespace Microsoft.Build.BackEnd
             WorkUnitActionCode finalActionCode = WorkUnitActionCode.Continue;
             WorkUnitResult lastResult = new WorkUnitResult(WorkUnitResultCode.Success, WorkUnitActionCode.Continue, null);
 
+            if (_requestEntry.StaticGraphBuilder != null)
+            {
+                if (_target.PrecomputationMode == "Skip")
+                {
+                    return lastResult;
+                }
+            }
+
             try
             {
-                
                 if (_requestEntry.StaticGraphBuilder != null)
                 {
                     if (!_requestEntry.IsRecursiveCallTarget)

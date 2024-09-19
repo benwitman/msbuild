@@ -51,14 +51,14 @@ namespace Microsoft.Build.Construction
         private static readonly HashSet<string> ValidAttributesOnUsingTask = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.taskName, XMakeAttributes.assemblyFile, XMakeAttributes.assemblyName, XMakeAttributes.taskFactory, XMakeAttributes.architecture, XMakeAttributes.runtime, XMakeAttributes.requiredPlatform, XMakeAttributes.requiredRuntime, XMakeAttributes.overrideUsingTask };
 
         /// <summary>
-        /// Valid attributes on usingtask element
+        /// Valid attributes on usingtaskprecomputationmode element
         /// </summary>
         private static readonly HashSet<string> ValidAttributesOnUsingTaskPrecomputationMode = new HashSet<string> { XMakeAttributes.taskName, XMakeAttributes.taskMode };
 
         /// <summary>
         /// Valid attributes on target element
         /// </summary>
-        private static readonly HashSet<string> ValidAttributesOnTarget = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.name, XMakeAttributes.inputs, XMakeAttributes.outputs, XMakeAttributes.keepDuplicateOutputs, XMakeAttributes.dependsOnTargets, XMakeAttributes.beforeTargets, XMakeAttributes.afterTargets, XMakeAttributes.returns };
+        private static readonly HashSet<string> ValidAttributesOnTarget = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.name, XMakeAttributes.inputs, XMakeAttributes.outputs, XMakeAttributes.keepDuplicateOutputs, XMakeAttributes.dependsOnTargets, XMakeAttributes.beforeTargets, XMakeAttributes.afterTargets, XMakeAttributes.returns, XMakeAttributes.precomputationMode };
 
         /// <summary>
         /// Valid attributes on error element
@@ -576,7 +576,7 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
-        /// Parse a ParseProjectUsingTaskPrecomputationModeElement
+        /// Parse a ProjectUsingTaskPrecomputationModeElement
         /// </summary>
         private ProjectUsingTaskPrecomputationModeElement ParseProjectUsingTaskPrecomputationModeElement(XmlElementWithLocation element)
         {

@@ -246,6 +246,23 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
+        /// </summary>
+        public string PrecomputationMode
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return GetAttributeValue(XMakeAttributes.precomputationMode);
+            }
+
+            set
+            {
+                ErrorUtilities.VerifyThrowArgumentNull(value, XMakeAttributes.precomputationMode);
+                SetOrRemoveAttribute(XMakeAttributes.precomputationMode, value, "Set target PrecomputationMode {0}", value);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the Returns value.
         /// Returns null if the attribute is not present -- empty string is an allowable
         /// value for both getting and setting.

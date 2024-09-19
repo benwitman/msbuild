@@ -96,10 +96,6 @@ namespace Microsoft.Build.Evaluation
         private readonly List<KeyValuePair<string, ProjectUsingTaskElement>> _usingTaskElements;
 
         /// <summary>
-        /// List of ProjectUsingTaskElement's traversing into imports.
-        /// Gathered during the first pass to avoid traversing again.
-        /// Key is the directory of the file importing the usingTask, which is needed
-        /// to handle any relative paths in the usingTask.
         /// </summary>
         private readonly List<KeyValuePair<string, ProjectUsingTaskPrecomputationModeElement>> _usingTaskPrecomputationModeElements;
 
@@ -580,6 +576,7 @@ namespace Microsoft.Build.Evaluation
                 targetElement.DependsOnTargets,
                 targetElement.BeforeTargets,
                 targetElement.AfterTargets,
+                targetElement.PrecomputationMode,
                 targetElement.Location,
                 targetElement.ConditionLocation,
                 targetElement.InputsLocation,

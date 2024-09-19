@@ -777,25 +777,61 @@ namespace Microsoft.Build.BackEnd
                             _buildRequestEntry.IsRecursiveCallTarget = oldIsRecursiveCallTarget;
                         }
                     }
-                    else if (host.TaskInstance is ITaskStatic || precomputationMode == "Static")
+                    else
                     {
-                        taskExecutionHost.Execute();
-                        GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
-                    }
-                    else if (!(host.TaskInstance is ITaskStaticSkip))
-                    {
-                        var task = new StaticTarget.Task();
-                        task.Parameters = taskExecutionHost.CalculatedParameters;
-                        task.Name = taskExecutionHost.LoadedTask.Type.AssemblyQualifiedName;
-                        task.AssemblyFile = taskExecutionHost.LoadedTask.Assembly.AssemblyFile;
-                        task.AssemblyName = taskExecutionHost.LoadedTask.Assembly.AssemblyName;
-                        _buildRequestEntry.StaticGraphBuilder.CurrentStaticTarget.Tasks.Add(task);
+                        string finalMode =
+                            !string.IsNullOrEmpty(_taskNode.PrecomputationMode) ?
+                                _taskNode.PrecomputationMode :
+                            !string.IsNullOrEmpty(precomputationMode) ?
+                                precomputationMode :
+                            host.TaskInstance is ITaskStatic ?
+                                "Static" :
+                            host.TaskInstance is ITaskStaticSkip ?
+                                "Skip" :
+                            host.TaskInstance is ITaskHybrid ?
+                                "Hybrid" :
+                                "Dynamic";
 
-                        if (host.TaskInstance is ITaskHybrid)
+                        // Static
+                        switch(finalMode)
                         {
-                            ITaskHybrid hybridTask = host.TaskInstance as ITaskHybrid;
-                            hybridTask.ExecuteStatic();
-                            GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
+                            case "Skip":
+                            case "Dynamic":
+                                break;
+                            case "Static":
+                                taskExecutionHost.Execute();
+                                GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
+                                break;
+                            case "Hybrid":
+                                if (host.TaskInstance is ITaskHybrid hybridTask)
+                                {
+                                    hybridTask.ExecuteStatic();
+                                    GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
+                                }
+                                else
+                                {
+                                    taskLoggingContext.LogError(new BuildEventFileInfo(_targetChildInstance.Location),
+                                        "PlaceHolderError",
+                                        $"Hybrid mode forced on non-hybrid task falling back to dynamic");
+                                }
+                                break;
+                        }
+
+                        // Dynamic
+                        switch(finalMode)
+                        {
+                            case "Static":
+                            case "Skip":
+                                break;
+                            case "Dynamic":
+                            case "Hybrid":
+                                var task = new StaticTarget.Task();
+                                task.Parameters = taskExecutionHost.CalculatedParameters;
+                                task.Name = taskExecutionHost.LoadedTask.Type.AssemblyQualifiedName;
+                                task.AssemblyFile = taskExecutionHost.LoadedTask.Assembly.AssemblyFile;
+                                task.AssemblyName = taskExecutionHost.LoadedTask.Assembly.AssemblyName;
+                                _buildRequestEntry.StaticGraphBuilder.CurrentStaticTarget.Tasks.Add(task);
+                                break;
                         }
                     }
 

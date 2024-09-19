@@ -1,0 +1,13 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="Build" DependsOnTargets="TestSkip;TestTaskModes">
+  </Target>
+  <Target Name="TestSkip" PrecomputationMode="Skip">
+    <Message Text="I am only run in normal msbuild"/>  
+  </Target>
+  <Target Name="TestTaskModes">
+    <Message PrecomputationMode="Skip"    Text="cmd /c I am only run in normal msbuild"/>
+    <Message PrecomputationMode="Dynamic" Text="cmd /c I am only run in normal msbuild and am precomputed"/>
+    <Message PrecomputationMode="Static"  Text="cmd /c I am only run in normal msbuild and print during static"/>
+    <Message PrecomputationMode="Hybrid"  Text="cmd /c I am only run in normal msbuild and print both times"/>
+  </Target>
+</Project>

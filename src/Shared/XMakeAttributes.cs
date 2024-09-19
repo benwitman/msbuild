@@ -66,6 +66,7 @@ namespace Microsoft.Build.Shared
         internal const string evaluate = "Evaluate";
         internal const string label = "Label";
         internal const string returns = "Returns";
+        internal const string precomputationMode = "PrecomputationMode";
 
         // Obsolete
         internal const string requiredRuntime = "RequiredRuntime";
@@ -102,9 +103,9 @@ namespace Microsoft.Build.Shared
         /////////////////////////////////////////////////////////////////////////////////////////////
         internal const string defaultXmlNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
 
-        private static readonly HashSet<string> KnownSpecialTaskAttributes = new HashSet<string> { condition, continueOnError, msbuildRuntime, msbuildArchitecture, xmlns };
+        private static readonly HashSet<string> KnownSpecialTaskAttributes = new HashSet<string> { condition, continueOnError, msbuildRuntime, msbuildArchitecture, xmlns, precomputationMode };
 
-        private static readonly HashSet<string> KnownSpecialTaskAttributesIgnoreCase = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { condition, continueOnError, msbuildRuntime, msbuildArchitecture, xmlns };
+        private static readonly HashSet<string> KnownSpecialTaskAttributesIgnoreCase = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { condition, continueOnError, msbuildRuntime, msbuildArchitecture, xmlns, precomputationMode };
 
         private static readonly HashSet<string> KnownBatchingTargetAttributes = new HashSet<string> { name, condition, dependsOnTargets, beforeTargets, afterTargets };
 

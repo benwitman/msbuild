@@ -98,6 +98,23 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
+        /// </summary>
+        public string PrecomputationMode
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return GetAttributeValue(XMakeAttributes.precomputationMode);
+            }
+
+            [DebuggerStepThrough]
+            set
+            {
+                SetOrRemoveAttribute(XMakeAttributes.precomputationMode, value, "Set task PrecomputationMode {0}", value);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the architecture value for the task.
         /// Returns empty string if it is not present.
         /// Removes the attribute if the value to set is empty.

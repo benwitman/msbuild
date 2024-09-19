@@ -12,7 +12,6 @@ using Microsoft.Build.Shared;
 namespace Microsoft.Build.Construction
 {
     /// <summary>
-    /// ProjectUsingTaskPrecomputationModeElement
     /// </summary>
     [DebuggerDisplay("TaskName={TaskName} TaskMode={TaskMode}")]
     public class ProjectUsingTaskPrecomputationModeElement : ProjectElementContainer
@@ -26,7 +25,6 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
-        /// Initialize a parented ProjectUsingTaskElement
         /// </summary>
         internal ProjectUsingTaskPrecomputationModeElement(XmlElementWithLocation xmlElement, ProjectRootElement parent, ProjectRootElement containingProject)
             : base(xmlElement, parent, containingProject)
@@ -35,7 +33,6 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
-        /// Initialize an unparented ProjectUsingTaskElement
         /// </summary>
         private ProjectUsingTaskPrecomputationModeElement(XmlElementWithLocation xmlElement, ProjectRootElement containingProject)
             : base(xmlElement, null, containingProject)
@@ -76,15 +73,11 @@ namespace Microsoft.Build.Construction
         public ElementLocation TaskNameLocation => GetAttributeLocation(XMakeAttributes.taskName);
 
         /// <summary>
-        /// Location of the task name attribute
+        /// Location of the task mode attribute
         /// </summary>
         public ElementLocation TaskModeLocation => GetAttributeLocation(XMakeAttributes.taskMode);
 
         /// <summary>
-        /// Creates an unparented ProjectUsingTaskElement, wrapping an unparented XmlElement.
-        /// Validates the parameters.
-        /// Exactly one of assembly file and assembly name must have a value.
-        /// Caller should then ensure the element is added to a parent
         /// </summary>
         internal static ProjectUsingTaskPrecomputationModeElement CreateDisconnected(string taskName, string taskMode, ProjectRootElement containingProject)
         {

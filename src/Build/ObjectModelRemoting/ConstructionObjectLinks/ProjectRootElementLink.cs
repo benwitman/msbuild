@@ -163,7 +163,7 @@ namespace Microsoft.Build.ObjectModelRemoting
         public abstract ProjectUsingTaskElement CreateUsingTaskElement(string taskName, string assemblyFile, string assemblyName, string runtime, string architecture);
 
         /// <summary>
-        /// Facilitate remoting the <see cref="ProjectRootElement.CreateUsingTaskElement(string, string, string, string, string)"/>.
+        /// Facilitate remoting the <see cref="ProjectRootElement.CreateUsingTaskPrecomputationModeElement(string, string)"/>.
         /// </summary>
         public abstract ProjectUsingTaskPrecomputationModeElement CreateUsingTaskPrecomputationModeElement(string taskName, string taskMode); 
 

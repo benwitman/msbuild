@@ -2639,6 +2639,7 @@ namespace Microsoft.Build.Execution
                 dependsOnTargets ?? String.Empty,
                 beforeTargets ?? String.Empty,
                 afterTargets ?? String.Empty,
+                string.Empty,
                 _projectFileLocation,
                 String.IsNullOrEmpty(condition) ? null : ElementLocation.EmptyLocation,
                 String.IsNullOrEmpty(inputs) ? null : ElementLocation.EmptyLocation,

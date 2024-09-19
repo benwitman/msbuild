@@ -71,6 +71,10 @@ namespace Microsoft.Build.Execution
         private string _keepDuplicateOutputs;
 
         /// <summary>
+        /// </summary>
+        private string _precomputationMode;
+
+        /// <summary>
         /// Child entries of the target which refer to OnError targets
         /// </summary>
         private ObjectModel.ReadOnlyCollection<ProjectOnErrorInstance> _onErrorChildren;
@@ -149,6 +153,7 @@ namespace Microsoft.Build.Execution
             string dependsOnTargets,
             string beforeTargets,
             string afterTargets,
+            string precomputationMode,
             ElementLocation location,
             ElementLocation conditionLocation,
             ElementLocation inputsLocation,
@@ -183,6 +188,7 @@ namespace Microsoft.Build.Execution
             _dependsOnTargets = dependsOnTargets;
             _beforeTargets = beforeTargets;
             _afterTargets = afterTargets;
+            _precomputationMode = precomputationMode;
             _location = location;
             _conditionLocation = conditionLocation;
             _inputsLocation = inputsLocation;
@@ -264,6 +270,15 @@ namespace Microsoft.Build.Execution
             [DebuggerStepThrough]
             get
             { return _keepDuplicateOutputs; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public string PrecomputationMode
+        {
+            [DebuggerStepThrough]
+            get
+            { return _precomputationMode; }
         }
 
         /// <summary>
