@@ -122,6 +122,12 @@ namespace Microsoft.Build.BackEnd
         /// </summary>
         private Object _taskExecutionHostSync = new Object();
 
+        private List<ITaskItem> _inputs;
+        private List<ITaskItem> _outputs;
+
+        public ITaskItem[] Inputs { get { return _inputs?.ToArray() ?? Array.Empty<ITaskItem>(); } }
+        public ITaskItem[] Outputs { get { return _outputs?.ToArray() ?? Array.Empty<ITaskItem>(); } }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -157,6 +163,8 @@ namespace Microsoft.Build.BackEnd
             _targetBuilderCallback = targetBuilderCallback;
             _cancellationToken = cancellationToken;
             _targetChildInstance = taskInstance;
+            _inputs = null;
+            _outputs = null;
 
             // In the case of Intrinsic tasks, taskNode will end up null.  Currently this is how we distinguish
             // intrinsic from extrinsic tasks.
@@ -493,7 +501,7 @@ namespace Microsoft.Build.BackEnd
                     ErrorUtilities.VerifyThrow(howToExecuteTask == TaskExecutionMode.InferOutputsOnly, "should be inferring");
 
                     ErrorUtilities.VerifyThrow(
-                        GatherTaskOutputs(null, howToExecuteTask, bucket),
+                        GatherTaskOutputs(null, howToExecuteTask, bucket, null),
                         "The method GatherTaskOutputs() should never fail when inferring task outputs.");
 
                     if (lookupHash != null)
@@ -800,13 +808,27 @@ namespace Microsoft.Build.BackEnd
                                 break;
                             case "Static":
                                 taskExecutionHost.Execute();
-                                GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
+                                GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket, null);
                                 break;
                             case "Hybrid":
                                 if (host.TaskInstance is ITaskHybrid hybridTask)
                                 {
-                                    hybridTask.ExecuteStatic();
-                                    GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket);
+                                    var hybridResult = hybridTask.ExecuteStatic();
+                                    var defaultParameters = hybridTask.DefaultInputProperties.Concat(hybridTask.DefaultOutputProperties).ToHashSet();
+                                    GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket, defaultParameters);
+
+                                    if (_inputs == null)
+                                    {
+                                        _inputs = new List<ITaskItem>();
+                                    }
+
+                                    if (_outputs == null)
+                                    {
+                                        _outputs = new List<ITaskItem>();
+                                    }
+
+                                    hybridTask.DefaultInputProperties.Where(t => defaultParameters.Contains(t)).All(t => taskExecutionHost.GatherTaskOutputs(t, _taskNode.Location, ref _inputs));
+                                    hybridTask.DefaultOutputProperties.Where(t => defaultParameters.Contains(t)).All(t => taskExecutionHost.GatherTaskOutputs(t, _taskNode.Location, ref _outputs));
                                 }
                                 else
                                 {
@@ -1065,7 +1087,7 @@ namespace Microsoft.Build.BackEnd
                 // to false
                 if (taskReturned)
                 {
-                    taskResult = GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket) && taskResult;
+                    taskResult = GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket, null) && taskResult;
                 }
 
                 // If the taskResults are false look at ContinueOnError.  If ContinueOnError=false (default)
@@ -1151,8 +1173,9 @@ namespace Microsoft.Build.BackEnd
         /// <param name="taskExecutionHost">The task execution host.</param>
         /// <param name="howToExecuteTask">The task execution mode</param>
         /// <param name="bucket">The bucket to which the task execution belongs.</param>
+        /// <param name="notOveridden"></param>
         /// <returns>true, if successful</returns>
-        private bool GatherTaskOutputs(TaskExecutionHost taskExecutionHost, TaskExecutionMode howToExecuteTask, ItemBucket bucket)
+        private bool GatherTaskOutputs(TaskExecutionHost taskExecutionHost, TaskExecutionMode howToExecuteTask, ItemBucket bucket, HashSet<string> notOveridden)
         {
             bool gatheredTaskOutputsSuccessfully = true;
 
@@ -1224,6 +1247,8 @@ namespace Microsoft.Build.BackEnd
                         unexpandedTaskParameterName,
                         XMakeAttributes.taskParameter,
                         XMakeElements.output);
+
+                    notOveridden?.Remove(taskParameterName);
 
                     // if we're gathering outputs by .NET reflection
                     if (howToExecuteTask == TaskExecutionMode.ExecuteTaskAndGatherOutputs)

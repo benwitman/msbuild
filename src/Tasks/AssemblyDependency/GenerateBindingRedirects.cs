@@ -49,6 +49,10 @@ namespace Microsoft.Build.Tasks
         [Output]
         public ITaskItem OutputAppConfigFile { get; set; }
 
+        public string[] DefaultInputProperties => Array.Empty<string>();
+
+        public string[] DefaultOutputProperties => Array.Empty<string>();
+
         /// <summary>
         /// Execute the task.
         /// </summary>

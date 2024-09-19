@@ -17,5 +17,9 @@ namespace Microsoft.Build.Framework
         /// </summary>
         /// <returns>true, if successful</returns>
         bool ExecuteStatic();
+
+        string[] DefaultInputProperties { get; }
+
+        string[] DefaultOutputProperties { get; }
     }
 }

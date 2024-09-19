@@ -100,6 +100,7 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         private const int RetryDelayMillisecondsDefault = 1000;
 
+        [Output]
         public ITaskItem[] SourceFiles { get; set; }
 
         public ITaskItem[] SourceFolders { get; set; }
@@ -156,6 +157,10 @@ namespace Microsoft.Build.Tasks
         public bool OverwriteReadOnlyFiles { get; set; }
 
         public bool FailIfNotIncremental { get; set; }
+
+        public string[] DefaultInputProperties => new[] { "SourceFiles" };
+
+        public string[] DefaultOutputProperties => new[] { "DestinationFiles" };
 
         #endregion
 

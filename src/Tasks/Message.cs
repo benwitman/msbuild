@@ -45,6 +45,10 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         public bool IsCritical { get; set; }
 
+        public string[] DefaultInputProperties => Array.Empty<string>();
+
+        public string[] DefaultOutputProperties => Array.Empty<string>();
+
         public bool ExecuteStatic()
         {
             return Execute();

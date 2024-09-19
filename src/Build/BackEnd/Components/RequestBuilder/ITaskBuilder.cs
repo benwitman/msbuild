@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using TargetLoggingContext = Microsoft.Build.BackEnd.Logging.TargetLoggingContext;
 
 #nullable disable
@@ -52,5 +53,9 @@ namespace Microsoft.Build.BackEnd
         /// <param name="cancellationToken">The cancellation token used to cancel processing of the task.</param>
         /// <returns>A Task representing the work to be done.</returns>
         Task<WorkUnitResult> ExecuteTask(TargetLoggingContext targetLoggingContext, BuildRequestEntry requestEntry, ITargetBuilderCallback targetBuilderCallback, ProjectTargetInstanceChild task, TaskExecutionMode mode, Lookup lookupForInference, Lookup lookupForExecution, CancellationToken cancellationToken);
+
+        ITaskItem[] Inputs { get; }
+
+        ITaskItem[] Outputs { get; }
     }
 }

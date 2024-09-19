@@ -862,6 +862,22 @@ namespace Microsoft.Build.BackEnd
                     // Execute the task.
                     lastResult = await taskBuilder.ExecuteTask(targetLoggingContext, _requestEntry, _targetBuilderCallback, targetChildInstance, mode, lookupForInference, lookupForExecution, _cancellationToken);
 
+                    if (_requestEntry.StaticGraphBuilder != null)
+                    {
+                        var staticTarget = _requestEntry.StaticGraphBuilder.CurrentStaticTarget;
+                        foreach (var inputPath in taskBuilder.Inputs)
+                        {
+                            long inputId = _requestEntry.StaticGraphBuilder.SimulatedFileSystem.GetFileId(FileUtilities.ItemSpecToFullPath(inputPath.ItemSpec, _requestEntry.RequestConfiguration.Project.Directory));
+                            staticTarget.RecordInput(inputId);
+                        }
+
+                        foreach (var outputPath in taskBuilder.Outputs)
+                        {
+                            long outputId = _requestEntry.StaticGraphBuilder.SimulatedFileSystem.RecordOutput(staticTarget, FileUtilities.ItemSpecToFullPath(outputPath.ItemSpec, _requestEntry.RequestConfiguration.Project.Directory));
+                            staticTarget.RecordOutput(outputId);
+                        }
+                    }
+
                     if (lastResult.ResultCode == WorkUnitResultCode.Failed)
                     {
                         aggregatedTaskResult = WorkUnitResultCode.Failed;

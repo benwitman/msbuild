@@ -427,11 +427,22 @@ namespace Microsoft.Build.BackEnd
             return taskInitialized;
         }
 
+        public bool GatherTaskOutputs(string parameterName, ElementLocation parameterLocation, ref List<ITaskItem> result)
+        {
+            return GatherTaskOutputs(parameterName, parameterLocation, false, null, ref result);
+        }
+
+        public bool GatherTaskOutputs(string parameterName, ElementLocation parameterLocation, bool outputTargetIsItem, string outputTargetName)
+        {
+            List<ITaskItem> result = null;
+            return GatherTaskOutputs(parameterName, parameterLocation, outputTargetIsItem, outputTargetName, ref result);
+        }
+
         /// <summary>
         /// Retrieve the outputs from the task.
         /// </summary>
         /// <returns>True of the outputs were gathered successfully, false otherwise.</returns>
-        public bool GatherTaskOutputs(string parameterName, ElementLocation parameterLocation, bool outputTargetIsItem, string outputTargetName)
+        private bool GatherTaskOutputs(string parameterName, ElementLocation parameterLocation, bool outputTargetIsItem, string outputTargetName, ref List<ITaskItem> result)
         {
             ErrorUtilities.VerifyThrow(_taskFactoryWrapper != null, "Need a taskFactoryWrapper to retrieve outputs from.");
 
@@ -467,7 +478,11 @@ namespace Microsoft.Build.BackEnd
 
                 EnsureParameterInitialized(parameter, _batchBucket.Lookup);
 
-                if (parameter.IsAssignableToITask)
+                if (result != null)
+                {
+                    result.AddRange(GetItemOutputs(parameter));
+                }
+                else if (parameter.IsAssignableToITask)
                 {
                     ITaskItem[] outputs = GetItemOutputs(parameter);
                     GatherTaskItemOutputs(outputTargetIsItem, outputTargetName, outputs, parameterLocation, parameter);
