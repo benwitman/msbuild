@@ -65,22 +65,26 @@
   </Target>
 
   <Target Name="BootstrapFull" DependsOnTargets="CleanBootstrapFolder;SetBinPaths;GatherNuGetDependencies">
-    <ItemGroup Condition="'$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' == ''">
-      <SdkResolverFiles Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\**\*.*" />
-    </ItemGroup>
     <ItemGroup Condition="'$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' != ''">
       <SdkResolverFiles Include="$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)\**\*.*" />
     </ItemGroup>
-    <ItemGroup>
+    <ItemGroup Condition="'$(MSBUILD_ISOLATED)' == '' AND '$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' == ''">
+      <SdkResolverFiles Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\**\*.*" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBUILD_ISOLATED)' == ''">
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\*.targets" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\*.props" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\Tracker*.dll" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\Tracker*.exe" />
       <InstalledVersionedExtensions Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\**\FileTracker*.dll" />
+      <InstalledStaticAnalysisTools Include="$(VsInstallRoot)\Team Tools\Static Analysis Tools\**\*.*" />
+      <InstalledMicrosoftExtensions Include="$(MSBuildExtensionsPath)\Microsoft\**\*.*"
+                                    Exclude="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\NodeJs\**" />
+      <InstalledNuGetFiles Include="$(MSBuildExtensionsPath)\Microsoft\NuGet\*" />
+    </ItemGroup>
+    <ItemGroup>
       <NuGetSdkResolverManifest Include="$(RepoRoot)src\MSBuild\SdkResolvers\VS\Microsoft.Build.NuGetSdkResolver.xml" />
       <InstalledSdks Include="$(BOOTSTRAP_DOTNET_INSTALL_LOCATION)\sdk\$(BOOTSTRAP_DOTNET_INSTALL_VERSION)\Sdks\**\*.*" />
-
-      <InstalledStaticAnalysisTools Include="$(VsInstallRoot)\Team Tools\Static Analysis Tools\**\*.*" />
 
       <ShimTargets Include="Microsoft.Data.Entity.targets" />
       <ShimTargets Include="Microsoft.ServiceModel.targets" />
@@ -90,10 +94,6 @@
       <ShimTargets Include="Workflow.Targets" />
       <ShimTargets Include="Workflow.VisualBasic.Targets" />
 
-      <InstalledMicrosoftExtensions Include="$(MSBuildExtensionsPath)\Microsoft\**\*.*"
-                                    Exclude="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\NodeJs\**" />
-
-      <InstalledNuGetFiles Include="$(MSBuildExtensionsPath)\Microsoft\NuGet\*" />
 
       <FreshlyBuiltBinaries Include="$(OutputPath)**\*.dll" />
       <FreshlyBuiltBinaries Include="$(OutputPath)**\*.exe" />
