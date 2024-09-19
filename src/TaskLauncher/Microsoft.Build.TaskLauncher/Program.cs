@@ -275,8 +275,8 @@ namespace Microsoft.Build.TaskLauncher
             specContents.AppendLine(
                 string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, untrackedDirectories: [{1}], dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ Transformer.sealSourceDirectory(d`{2}`, Transformer.SealSourceDirectoryOption.allDirectories) ] }};\n",
                     System.Reflection.Assembly.GetExecutingAssembly().Location,
-                    string.Join(", ", new[] { Path.Combine(Environment.GetEnvironmentVariable("VCINSTALLDIR"), @"Common7\IDE\Remote Debugger") }.Select(t => $"d`{t}`")), 
-                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)));
+                    string.Join(", ", new[] { Path.Combine(Environment.GetEnvironmentVariable("VCINSTALLDIR"), @"Common7\IDE\Remote Debugger") }.Select(t => $"d`{t}`")),
+                    Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location))));
 
             var ser = new DataContractJsonSerializer(typeof(StaticTarget));
 
