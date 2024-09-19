@@ -10,9 +10,9 @@
          versions of this project -->
     <RuntimeIdentifiers>win7-x86;win7-x64</RuntimeIdentifiers>
     <UseRidGraph>true</UseRidGraph>
+    <AppConfig>app.config</AppConfig>
+    <AppConfig Condition="'$(Platform)' == 'x64' or '$(Platform)' == 'arm64'">app.amd64.config</AppConfig>
   </PropertyGroup>
-
-
 
   <ItemGroup>
     <ProjectReference Include="..\..\Build\Microsoft.Build.csproj" />

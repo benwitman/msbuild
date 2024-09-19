@@ -112,6 +112,7 @@
       <FreshlyBuiltBinariesx64 Include="$(MSBuildTaskHostX64BinPath)**\*.exe.config" />
       <FreshlyBuiltBinariesx64 Include="$(X64BinPath)**\*.dll.config" />
       <FreshlyBuiltBinariesx64 Include="$(MSBuildTaskLauncherBinPath)**\*.exe" />
+      <FreshlyBuiltBinariesx64 Include="$(MSBuildTaskLauncherBinPath)**\*.exe.config" />
       <FreshlyBuiltBinariesx64 Include="$(MSBuildTaskLauncherBinPath)**\*.pdb" />
 
       <FreshlyBuiltBinariesArm64 Include="$(X64BinPath)\Microsoft.Build.Tasks.Core.dll" />
