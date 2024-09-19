@@ -1449,6 +1449,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   <Target
       Name="UnmanagedUnregistration"
+      PrecomputationMode="Skip"
       Condition="(('$(_AssemblyTimestampBeforeCompile)' != '$(_AssemblyTimestampAfterCompile)' or '$(RegisterForComInterop)' != 'true' or '$(OutputType)' != 'library') or
                     ('$(_AssemblyTimestampBeforeCompile)' == '')) and
                    Exists('@(_UnmanagedRegistrationCache)')"
@@ -3809,7 +3810,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     contribute to incremental build inconsistencies.
     ============================================================
     -->
-  <Target Name="_GenerateCompileDependencyCache" Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true'" DependsOnTargets="ResolveAssemblyReferences">
+  <Target Name="_GenerateCompileDependencyCache" PrecomputationMode="Skip" Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true'" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
       <CoreCompileCache Include="@(Compile)" />
@@ -5458,7 +5459,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     ============================================================
     -->
   <Target
-      Name="_CheckForCompileOutputs">
+      Name="_CheckForCompileOutputs"
+      PrecomputationMode="Skip">
 
     <!--Record the main compile outputs.-->
     <ItemGroup>
@@ -5496,6 +5498,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     -->
   <Target
       Name="_SGenCheckForOutputs"
+      PrecomputationMode="Skip"
       Condition="'$(_SGenGenerateSerializationAssembliesConfig)' == 'On' or ('@(WebReferenceUrl)'!='' and '$(_SGenGenerateSerializationAssembliesConfig)' == 'Auto')"
         >
 
@@ -5588,6 +5591,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     -->
   <Target
        Name="IncrementalClean"
+       PrecomputationMode="Skip"
        DependsOnTargets="$(IncrementalCleanDependsOn);_CleanGetCurrentAndPriorFileWrites">
 
     <!-- Subtract list of files produced in prior builds from list of files produced in this build. -->
@@ -5643,6 +5647,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     -->
   <Target
        Name="_CleanGetCurrentAndPriorFileWrites"
+       PrecomputationMode="Skip"
        DependsOnTargets="_CheckForCompileOutputs;_SGenCheckForOutputs">
 
     <!-- Read the list of files produced by a prior builds from disk. -->
@@ -5767,6 +5772,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     -->
   <Target
       Name="CleanReferencedProjects"
+      PrecomputationMode="Skip"
       DependsOnTargets="PrepareProjectReferences">
 
     <!--
@@ -5796,6 +5802,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   <Target
       Name="CoreClean"
+      PrecomputationMode="Skip"
       DependsOnTargets="$(CoreCleanDependsOn)">
 
     <!-- First clean any explicitly specified cleanable files.
@@ -5857,6 +5864,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     -->
   <Target
        Name="_CleanRecordFileWrites"
+       PrecomputationMode="Skip"
        DependsOnTargets="_CleanGetCurrentAndPriorFileWrites">
 
     <!--
@@ -5885,7 +5893,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     ============================================================
     -->
   <Target
-      Name="CleanPublishFolder">
+      Name="CleanPublishFolder"
+      PrecomputationMode="Skip">
 
     <RemoveDir
         Directories="$(ClickOncePublishDir)"
