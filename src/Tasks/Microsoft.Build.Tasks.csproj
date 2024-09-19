@@ -197,6 +197,7 @@
     <Compile Include="ResourceHandling\*.cs" />
     <Compile Include="GlobalEnvVars.cs" />
     <Compile Include="GetCompatiblePlatform.cs" />
+    <Compile Include="PrecomputeInfo.cs" />
     <Compile Include="SetRidAgnosticValueForProjects.cs" />
     <Compile Include="BuildCacheDisposeWrapper.cs" />
     <Compile Include="DownloadFile.cs" />

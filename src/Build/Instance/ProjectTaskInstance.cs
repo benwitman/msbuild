@@ -351,7 +351,7 @@ namespace Microsoft.Build.Execution
         {
             ErrorUtilities.VerifyThrowArgumentLength(taskOutputParameterName, nameof(taskOutputParameterName));
             ErrorUtilities.VerifyThrowArgumentLength(itemName, nameof(itemName));
-            _outputs.Add(new ProjectTaskOutputItemInstance(itemName, taskOutputParameterName, condition ?? String.Empty, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, condition == null ? null : ElementLocation.EmptyLocation));
+            _outputs.Add(new ProjectTaskOutputItemInstance(itemName, taskOutputParameterName, condition ?? String.Empty, string.Empty, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, condition == null ? null : ElementLocation.EmptyLocation));
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace Microsoft.Build.Execution
         {
             ErrorUtilities.VerifyThrowArgumentLength(taskOutputParameterName, nameof(taskOutputParameterName));
             ErrorUtilities.VerifyThrowArgumentLength(propertyName, nameof(propertyName));
-            _outputs.Add(new ProjectTaskOutputPropertyInstance(propertyName, taskOutputParameterName, condition ?? String.Empty, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, condition == null ? null : ElementLocation.EmptyLocation));
+            _outputs.Add(new ProjectTaskOutputPropertyInstance(propertyName, taskOutputParameterName, condition ?? String.Empty, string.Empty, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, ElementLocation.EmptyLocation, condition == null ? null : ElementLocation.EmptyLocation));
         }
 
         void ITranslatable.Translate(ITranslator translator)

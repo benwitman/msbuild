@@ -24,6 +24,13 @@ namespace Microsoft.Build.Execution
         }
 
         /// <summary>
+        /// </summary>
+        public abstract string PrecomputationMode
+        {
+            get;
+        }
+
+        /// <summary>
         /// Location of the original element
         /// </summary>
         public abstract ElementLocation Location

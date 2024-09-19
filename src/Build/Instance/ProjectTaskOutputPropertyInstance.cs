@@ -33,6 +33,10 @@ namespace Microsoft.Build.Execution
         private string _condition;
 
         /// <summary>
+        /// </summary>
+        private string _precomputationMode;
+
+        /// <summary>
         /// Location of the original element
         /// </summary>
         private ElementLocation _location;
@@ -55,7 +59,7 @@ namespace Microsoft.Build.Execution
         /// <summary>
         /// Constructor called by Evaluator
         /// </summary>
-        internal ProjectTaskOutputPropertyInstance(string propertyName, string taskParameter, string condition, ElementLocation location, ElementLocation propertyNameLocation, ElementLocation taskParameterLocation, ElementLocation conditionLocation)
+        internal ProjectTaskOutputPropertyInstance(string propertyName, string taskParameter, string condition, string precomputationMode, ElementLocation location, ElementLocation propertyNameLocation, ElementLocation taskParameterLocation, ElementLocation conditionLocation)
         {
             ErrorUtilities.VerifyThrowInternalLength(propertyName, nameof(propertyName));
             ErrorUtilities.VerifyThrowInternalLength(taskParameter, nameof(taskParameter));
@@ -70,6 +74,7 @@ namespace Microsoft.Build.Execution
             _propertyNameLocation = propertyNameLocation;
             _taskParameterLocation = taskParameterLocation;
             _conditionLocation = conditionLocation;
+            _precomputationMode = precomputationMode;
         }
 
         private ProjectTaskOutputPropertyInstance()
@@ -99,6 +104,13 @@ namespace Microsoft.Build.Execution
         public override string Condition
         {
             get { return _condition; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public override string PrecomputationMode
+        {
+            get { return _precomputationMode; }
         }
 
         /// <summary>

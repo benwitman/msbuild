@@ -68,7 +68,7 @@ namespace Microsoft.Build.Construction
         /// <summary>
         /// Valid attributes on output element
         /// </summary>
-        private static readonly HashSet<string> ValidAttributesOnOutput = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.taskParameter, XMakeAttributes.itemName, XMakeAttributes.propertyName };
+        private static readonly HashSet<string> ValidAttributesOnOutput = new HashSet<string> { XMakeAttributes.condition, XMakeAttributes.label, XMakeAttributes.taskParameter, XMakeAttributes.itemName, XMakeAttributes.propertyName, XMakeAttributes.precomputationMode };
 
         /// <summary>
         /// Valid attributes on UsingTaskParameter element

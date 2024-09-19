@@ -116,6 +116,23 @@ namespace Microsoft.Build.Construction
         }
 
         /// <summary>
+        /// </summary>
+        public string PrecomputationMode
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return GetAttributeValue(XMakeAttributes.precomputationMode);
+            }
+
+            set
+            {
+                ErrorUtilities.VerifyThrowInvalidOperation(String.IsNullOrEmpty(ItemType), "OM_EitherAttributeButNotBoth", ElementName, XMakeAttributes.itemName, XMakeAttributes.precomputationMode);
+                SetOrRemoveAttribute(XMakeAttributes.precomputationMode, value, "Set Output PrecomputationMode {0}", value);
+            }
+        }
+
+        /// <summary>
         /// Location of the task parameter attribute
         /// </summary>
         public ElementLocation TaskParameterLocation => GetAttributeLocation(XMakeAttributes.taskParameter);

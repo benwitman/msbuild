@@ -814,8 +814,13 @@ namespace Microsoft.Build.BackEnd
                                 if (host.TaskInstance is ITaskHybrid hybridTask)
                                 {
                                     var hybridResult = hybridTask.ExecuteStatic();
-                                    var defaultParameters = hybridTask.DefaultInputProperties.Concat(hybridTask.DefaultOutputProperties).ToHashSet();
-                                    GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket, defaultParameters);
+
+                                    var parametersAsInputsOutputs =
+                                        hybridTask.DefaultInputProperties.Select(name => (name, mode: "Input")).Concat(
+                                            hybridTask.DefaultOutputProperties.Select(name => (name, mode: "Output"))
+                                        ).ToDictionary(t => t.name, t => t.mode);
+
+                                    GatherTaskOutputs(taskExecutionHost, howToExecuteTask, bucket, parametersAsInputsOutputs);
 
                                     if (_inputs == null)
                                     {
@@ -827,8 +832,15 @@ namespace Microsoft.Build.BackEnd
                                         _outputs = new List<ITaskItem>();
                                     }
 
-                                    hybridTask.DefaultInputProperties.Where(t => defaultParameters.Contains(t)).All(t => taskExecutionHost.GatherTaskOutputs(t, _taskNode.Location, ref _inputs));
-                                    hybridTask.DefaultOutputProperties.Where(t => defaultParameters.Contains(t)).All(t => taskExecutionHost.GatherTaskOutputs(t, _taskNode.Location, ref _outputs));
+                                    foreach (var kvp in parametersAsInputsOutputs)
+                                    {
+                                        if (string.IsNullOrEmpty(kvp.Value))
+                                        {
+                                            continue;
+                                        }
+
+                                        taskExecutionHost.GatherTaskOutputs(kvp.Key, _taskNode.Location, kvp.Value == "Input" ? _inputs : _outputs);
+                                    }
                                 }
                                 else
                                 {
@@ -1175,7 +1187,7 @@ namespace Microsoft.Build.BackEnd
         /// <param name="bucket">The bucket to which the task execution belongs.</param>
         /// <param name="notOveridden"></param>
         /// <returns>true, if successful</returns>
-        private bool GatherTaskOutputs(TaskExecutionHost taskExecutionHost, TaskExecutionMode howToExecuteTask, ItemBucket bucket, HashSet<string> notOveridden)
+        private bool GatherTaskOutputs(TaskExecutionHost taskExecutionHost, TaskExecutionMode howToExecuteTask, ItemBucket bucket, Dictionary<string, string> parametersAsInputsOutputs)
         {
             bool gatheredTaskOutputsSuccessfully = true;
 
@@ -1248,7 +1260,13 @@ namespace Microsoft.Build.BackEnd
                         XMakeAttributes.taskParameter,
                         XMakeElements.output);
 
-                    notOveridden?.Remove(taskParameterName);
+                    if (parametersAsInputsOutputs != null)
+                    {
+                        if (parametersAsInputsOutputs.ContainsKey(taskParameterName) || !string.IsNullOrEmpty(taskOutputItemInstance.PrecomputationMode))
+                        {
+                            parametersAsInputsOutputs[taskParameterName] = taskOutputItemInstance.PrecomputationMode ?? string.Empty;
+                        }
+                    }
 
                     // if we're gathering outputs by .NET reflection
                     if (howToExecuteTask == TaskExecutionMode.ExecuteTaskAndGatherOutputs)
