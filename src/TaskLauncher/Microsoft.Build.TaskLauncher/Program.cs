@@ -53,7 +53,7 @@ namespace Microsoft.Build.TaskLauncher
             }
             else if (args[0].Equals("print", StringComparison.OrdinalIgnoreCase))
             {
-                if (args.Length != 5)
+                if (args.Length != 6)
                 {
                     Usage();
                     return 1;
@@ -65,7 +65,7 @@ namespace Microsoft.Build.TaskLauncher
                     return 1;
                 }
 
-                StaticGraphToDScript(args[1], args[2], args[3], args[4]);
+                StaticGraphToDScript(args[1], args[2], args[3], args[4], args[5]);
                 return 0;
             }
             else if (args[0].Equals("meta", StringComparison.OrdinalIgnoreCase))
@@ -148,17 +148,17 @@ namespace Microsoft.Build.TaskLauncher
             Console.WriteLine(Assembly.GetExecutingAssembly().Location + @" print " + outputDirectory + "\\graph.json " + sourceDirectory);
         }
 
-        private static void StaticGraphToDScript(string rootDirectory, string graphFile, string graphDirectory, string outputDirectory)
+        private static void StaticGraphToDScript(string rootDirectory, string sourceDirectory, string graphFile, string graphDirectory, string outputDirectory)
         {
             var dotNetRoot = Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
 
             StaticGraph graph = ReadStaticGraph(graphFile);
-            PrintPips(dotNetRoot, rootDirectory, graph, graphDirectory, outputDirectory);
+            PrintPips(dotNetRoot, rootDirectory, sourceDirectory, graph, graphDirectory, outputDirectory);
 
             Mount everythingMount = new Mount
             {
                 Name = "Everything",
-                Path = Path.GetPathRoot(Path.GetFullPath(graph.ProjectPath)),
+                Path = Path.GetPathRoot(sourceDirectory),
                 IsReadable = true,
                 IsWritable = true,
                 TrackSourceFileChanges = true
@@ -176,7 +176,7 @@ namespace Microsoft.Build.TaskLauncher
             Mount srcMount = new Mount
             {
                 Name = "Src",
-                Path = Path.GetDirectoryName(graph.ProjectPath),
+                Path = sourceDirectory,
                 IsReadable = true,
                 IsWritable = false,
                 TrackSourceFileChanges = true
@@ -185,7 +185,7 @@ namespace Microsoft.Build.TaskLauncher
             Mount objMount = new Mount
             {
                 Name = "Obj",
-                Path = Path.Combine(Path.GetDirectoryName(graph.ProjectPath), "obj"),
+                Path = Path.Combine(sourceDirectory, "obj"),
                 IsReadable = true,
                 IsWritable = true,
                 TrackSourceFileChanges = true
@@ -203,7 +203,7 @@ namespace Microsoft.Build.TaskLauncher
             Mount binMount = new Mount
             {
                 Name = "Bin",
-                Path = Path.Combine(Path.GetDirectoryName(graph.ProjectPath), "bin"),
+                Path = Path.Combine(sourceDirectory, "bin"),
                 IsReadable = true,
                 IsWritable = true,
                 TrackSourceFileChanges = true
@@ -283,7 +283,7 @@ namespace Microsoft.Build.TaskLauncher
             return graph;
         }
 
-        private static int PrintPips(string dotNetRoot, string rootDirectory, StaticGraph graph, string outputFolder, string outputDirectory)
+        private static int PrintPips(string dotNetRoot, string rootDirectory, string sourceDirectory, StaticGraph graph, string outputFolder, string outputDirectory)
         {
             StringBuilder specContents = new StringBuilder();
             specContents.AppendLine("import {Cmd, Transformer} from \"Sdk.Transformers\";\n");
@@ -359,7 +359,7 @@ namespace Microsoft.Build.TaskLauncher
 	arguments: [ Cmd.rawArgument(""run"") ],
 	consoleInput: ""{NormalizeRawString(stdIn.ToString())}"",
 	description: ""{target.Name + "_" + NormalizeRawString(target.LocationString)}"",
-	workingDirectory: d`{Path.GetDirectoryName(graph.ProjectPath)}`,
+	workingDirectory: d`{sourceDirectory}`,
     unsafe: {{ passThroughEnvironmentVariables: [""MICROSOFT_BUILD_TASKLAUNCHER_DEBUG"", ""MSBUILDDEBUGONSTART""] }},
     environmentVariables: [{string.Join(",\n", envVars.Select(envVar => $"\t{{ name: \"{envVar.Item1}\", value: \"{envVar.Item2}\" }}"))}],
 	consoleOutput: p`{Path.Combine(outputDirectory, "target" + i + ".out")}`,

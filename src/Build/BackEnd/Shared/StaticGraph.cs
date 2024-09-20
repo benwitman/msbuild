@@ -184,9 +184,6 @@ namespace Microsoft.Build.BackEnd
 
         [DataMember]
         public List<StaticFile> Files;
-
-        [DataMember]
-        public string ProjectPath;
     }
 
     public class StaticGraphBuilder
@@ -195,9 +192,9 @@ namespace Microsoft.Build.BackEnd
         public StaticGraph StaticGraph;
         public StaticTarget? CurrentStaticTarget;
 
-        public StaticGraphBuilder(string projectPath)
+        public StaticGraphBuilder()
         {
-            StaticGraph = new StaticGraph() { ProjectPath = projectPath };
+            StaticGraph = new StaticGraph() {};
             SimulatedFileSystem = new SimulatedFileSystem();
         }
 
