@@ -53,7 +53,7 @@ namespace Microsoft.Build.TaskLauncher
             }
             else if (args[0].Equals("print", StringComparison.OrdinalIgnoreCase))
             {
-                if (args.Length != 4)
+                if (args.Length != 5)
                 {
                     Usage();
                     return 1;
@@ -65,7 +65,7 @@ namespace Microsoft.Build.TaskLauncher
                     return 1;
                 }
 
-                StaticGraphToDScript(args[1], args[2], args[3]);
+                StaticGraphToDScript(args[1], args[2], args[3], args[4]);
                 return 0;
             }
             else if (args[0].Equals("meta", StringComparison.OrdinalIgnoreCase))
@@ -148,10 +148,12 @@ namespace Microsoft.Build.TaskLauncher
             Console.WriteLine(Assembly.GetExecutingAssembly().Location + @" print " + outputDirectory + "\\graph.json " + sourceDirectory);
         }
 
-        private static void StaticGraphToDScript(string graphFile, string graphDirectory, string outputDirectory)
+        private static void StaticGraphToDScript(string rootDirectory, string graphFile, string graphDirectory, string outputDirectory)
         {
+            var dotNetRoot = Environment.GetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
+
             StaticGraph graph = ReadStaticGraph(graphFile);
-            PrintPips(graph, graphDirectory, outputDirectory);
+            PrintPips(dotNetRoot, rootDirectory, graph, graphDirectory, outputDirectory);
 
             Mount everythingMount = new Mount
             {
@@ -159,6 +161,15 @@ namespace Microsoft.Build.TaskLauncher
                 Path = Path.GetPathRoot(Path.GetFullPath(graph.ProjectPath)),
                 IsReadable = true,
                 IsWritable = true,
+                TrackSourceFileChanges = true
+            };
+
+            Mount msbuildMount = new Mount
+            {
+                Name = "MsbuildSrc",
+                Path = rootDirectory,
+                IsReadable = true,
+                IsWritable = false,
                 TrackSourceFileChanges = true
             };
 
@@ -198,21 +209,24 @@ namespace Microsoft.Build.TaskLauncher
                 TrackSourceFileChanges = true
             };
 
-            List<Mount> mounts = new List<Mount>() { everythingMount, TaskLauncherMount, ProgramDataMount, BreadcrumbStoreMount, srcMount, objMount, binMount, outputMount };
+            List<Mount> mounts = new List<Mount>() { everythingMount, msbuildMount, ProgramDataMount, BreadcrumbStoreMount, srcMount, objMount, binMount, outputMount };
+
+            if (!string.IsNullOrEmpty(dotNetRoot))
+            {
+                mounts.Add(new Mount
+                {
+                    Name = "DotNetRoot",
+                    Path = dotNetRoot,
+                    IsReadable = true,
+                    IsWritable = false,
+                    TrackSourceFileChanges = true
+                });
+            }
 
             WriteConfigDsc(graphDirectory, mounts);
             WriteModuleConfigDsc(graphDirectory);
             Console.WriteLine(@"%PKGDOMINO%\bxl.exe /c:" + graphDirectory + @"\config.dsc");
         }
-
-        private static Mount TaskLauncherMount = new Mount
-        {
-            Name = "TaskLauncherSrc",
-            Path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-            IsReadable = true,
-            IsWritable = false,
-            TrackSourceFileChanges = true
-        };
 
         private static Mount ProgramDataMount = new Mount
         {
@@ -269,15 +283,17 @@ namespace Microsoft.Build.TaskLauncher
             return graph;
         }
 
-        private static int PrintPips(StaticGraph graph, string outputFolder, string outputDirectory)
+        private static int PrintPips(string dotNetRoot, string rootDirectory, StaticGraph graph, string outputFolder, string outputDirectory)
         {
             StringBuilder specContents = new StringBuilder();
             specContents.AppendLine("import {Cmd, Transformer} from \"Sdk.Transformers\";\n");
             specContents.AppendLine(
-                string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, untrackedDirectories: [{1}], dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ Transformer.sealSourceDirectory(d`{2}`, Transformer.SealSourceDirectoryOption.allDirectories) ] }};\n",
+                string.Format("const tool: Transformer.ToolDefinition = {{ exe: f`{0}`, untrackedDirectories: [{1}], dependsOnWindowsDirectories: true, prepareTempDirectory: true, runtimeDirectoryDependencies: [ {2} ] }};\n",
                     System.Reflection.Assembly.GetExecutingAssembly().Location,
                     string.Join(", ", new[] { Path.Combine(Environment.GetEnvironmentVariable("VCINSTALLDIR"), @"Common7\IDE\Remote Debugger") }.Select(t => $"d`{t}`")),
-                    Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location))));
+                    string.Join(", ", new[] { rootDirectory }.Concat(string.IsNullOrEmpty(dotNetRoot) ? Enumerable.Empty<string>() : new[] { dotNetRoot }).Select(t =>
+                        $"Transformer.sealSourceDirectory(d`{t}`, Transformer.SealSourceDirectoryOption.allDirectories)"
+                    ))));
 
             var ser = new DataContractJsonSerializer(typeof(StaticTarget));
 
