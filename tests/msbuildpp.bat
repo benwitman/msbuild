@@ -13,5 +13,5 @@ IF NOT EXIST %_Static_Intermediate% mkdir %_Static_Intermediate%
 IF EXIST %_Static_Intermediate_PreProcess% rmdir /S/Q %_Static_Intermediate_PreProcess%
 mkdir %_Static_Intermediate_PreProcess%
 
-%_Static_Artifacts_MsBuild%\MSBuild.exe %_Static_Source%\project.proj /pp:%_Static_Intermediate_PreProcess%\project.pp
+%_Static_Artifacts_MsBuild% %_Static_Source_Proj% /pp:%_Static_Intermediate_PreProcess%\project.pp
 echo %_Static_Intermediate_PreProcess%\project.pp

@@ -12,6 +12,7 @@ set _Static_Intermediate_ProductBuildGraph=%_Static_Intermediate%\ProductBuildGr
 set _Static_Intermediate_ProductBuildOutput=%_Static_Intermediate%\ProductBuildOutput
 set _Static_Intermediate_PreProcess=%~dp0intermediate\%1\PreProcess
 set _Static_Source=%~dp0%1
+for /F %%i in ('dir /B %_Static_Source%\*proj') do (set _Static_Source_Proj=%_Static_Source%\%%i)
 
 set PATH=C:\Windows\system32;C:\Windows
 
