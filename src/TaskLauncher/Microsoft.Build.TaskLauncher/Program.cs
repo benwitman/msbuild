@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using Microsoft.Build.BackEnd;
+using Microsoft.Build.BackEnd.Components.Caching;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Shared;
@@ -721,6 +722,13 @@ const {0} = Transformer.execute(
 
         public string ProjectFileOfTaskNode => "a project";
 
+        private RegisteredTaskObjectCacheBase _registeredTaskObjectCache;
+
+        public SimpleBuildEngine()
+        {
+            _registeredTaskObjectCache = new RegisteredTaskObjectCacheBase();
+        }
+
         public bool BuildProjectFile(string projectFileName, string[] targetNames, IDictionary globalProperties, IDictionary targetOutputs, string toolsVersion)
         {
             throw new NotImplementedException();
@@ -737,11 +745,6 @@ const {0} = Transformer.execute(
         }
 
         public bool BuildProjectFilesInParallel(string[] projectFileNames, string[] targetNames, IDictionary[] globalProperties, IDictionary[] targetOutputsPerProject, string[] toolsVersion, bool useResultsCache, bool unloadProjectsOnCompletion)
-        {
-            throw new NotImplementedException();
-        }
-
-        public object GetRegisteredTaskObject(object key, RegisteredTaskObjectLifetime lifetime)
         {
             throw new NotImplementedException();
         }
@@ -763,7 +766,7 @@ const {0} = Transformer.execute(
 
         public void LogTelemetry(string eventName, IDictionary<string, string> properties)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Telemetry: " + eventName + "(" + string.Join(", ", properties.Select(t => $"{t.Key}: `{t.Value}`") + ")"));
         }
 
         public void LogWarningEvent(BuildWarningEventArgs e)
@@ -778,17 +781,22 @@ const {0} = Transformer.execute(
 
         public void RegisterTaskObject(object key, object obj, RegisteredTaskObjectLifetime lifetime, bool allowEarlyCollection)
         {
-            throw new NotImplementedException();
+            _registeredTaskObjectCache.RegisterTaskObject(key, obj, lifetime, allowEarlyCollection);
+        }
+
+        public object GetRegisteredTaskObject(object key, RegisteredTaskObjectLifetime lifetime)
+        {
+            return _registeredTaskObjectCache.GetRegisteredTaskObject(key, lifetime);
         }
 
         public object UnregisterTaskObject(object key, RegisteredTaskObjectLifetime lifetime)
         {
-            throw new NotImplementedException();
+            return _registeredTaskObjectCache.UnregisterTaskObject(key, lifetime);
         }
 
         public void Yield()
         {
-            throw new NotImplementedException();
+            return;
         }
     }
 }
