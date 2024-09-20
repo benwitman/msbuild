@@ -440,11 +440,13 @@ const tool: Transformer.ToolDefinition =
     exe: f`{0}`,
     dependsOnWindowsDirectories: true,
     prepareTempDirectory: true,
-    runtimeDirectoryDependencies: [{1}]
+    runtimeDirectoryDependencies: [{1}],
+    untrackedDirectories: [{2}]
 }};",
                 msBuild,
                 string.Join(", ", new[] { rootDirectory, dotNetRoot}.Where(t => !string.IsNullOrEmpty(t)).Select(t => string.Format(@"
-Transformer.sealSourceDirectory(d`{0}`, Transformer.SealSourceDirectoryOption.allDirectories)", t)))
+Transformer.sealSourceDirectory(d`{0}`, Transformer.SealSourceDirectoryOption.allDirectories)", t))),
+                string.Join(", ", new[] { Environment.GetEnvironmentVariable("USERPROFILE") }.Select(t => $"d`{t}`"))
             ));
 
             specContents.AppendLine(string.Format(@"
