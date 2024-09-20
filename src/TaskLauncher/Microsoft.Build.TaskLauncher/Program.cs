@@ -373,9 +373,7 @@ namespace Microsoft.Build.TaskLauncher
             List<string> inputs = new List<string>()
             {
                 $"f`{Path.Combine(Path.GetDirectoryName(projectFile), "app.config")}`",
-                // $"Transformer.sealSourceDirectory(d`{Path.GetDirectoryName(projFile)}`, Transformer.SealSourceDirectoryOption.allDirectories)",
                 $"Transformer.sealSourceDirectory(d`{ProgramFilesx86Mount.Path}`, Transformer.SealSourceDirectoryOption.allDirectories)",
-                $"Transformer.sealSourceDirectory(d`{Path.GetDirectoryName(msBuild)}`, Transformer.SealSourceDirectoryOption.allDirectories)",
                 $"Transformer.sealSourceDirectory(d`{Environment.GetEnvironmentVariable("ProgramData")}`, Transformer.SealSourceDirectoryOption.allDirectories)",
                 $"Transformer.sealSourceDirectory(d`{Path.GetDirectoryName(projectFile)}`, Transformer.SealSourceDirectoryOption.allDirectories)",
             };
