@@ -13,22 +13,20 @@ set PKGDOMINO=C:\.tools\.nuget\packages\microsoft.buildxl.win-x64\0.1.0-20240825
 ```
 
 ## Using Private .NET SDK
-Building MsBuild Bootstrap you can use these properties to use a custom .NET build+sdk (with the appopriate path and .NET install version):
+`buildmsbuildwithdotnet.bat` can be used to build MsBuild with a private .NET SDK.
+
+This effectively builds `MsBuild.Bootstrap` with these properties to copy over a custom .NET build+sdk (with the appopriate path and .NET install version):
 ```
-/p:DOTNET_INSTALL_DIR=<...>artifacts\bin\redist\Debug\dotnet /p:DOTNET_INSTALL_VERSION=8.0.400-dev
+/p:BOOTSTRAP_DOTNET_INSTALL_LOCATION=<...>artifacts\bin\redist\Debug\dotnet
+/p:BOOTSTRAP_DOTNET_INSTALL_VERSION=8.0.400-dev
+/p:BOOTSTRAP_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER=<...>\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver\debug\net472
 ```
 
-You can also set this to redirect the final SDK resolution to the private directory:
+(deprecated) you can also set this to redirect the final SDK resolution to the private directory at runtime:
 ```
-set TEST_CUSTOM_DOTNET=<..>\artifacts\bin\redist\debug\dotnet
-set TEST_CUSTOM_DOTNET_VERSION=8.0.202-dev
+set TEST_CUSTOM_DOTNET=<...>\artifacts\bin\redist\debug\dotnet
+set TEST_CUSTOM_DOTNET_VERSION=8.0.400-dev
 ```
-
-```
-set MicrosoftNETBuildExtensionsTargets=C:\r\dotnet.sdk\artifacts\bin\redist\Debug\dotnet\sdk\8.0.400-dev\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
-```
-
-Setting `/p:MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER=<...>\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver\debug\net472` during the build of `MsBuild.Bootstrap` will use  Microsoft.DotNet.MSBuildSdkResolver from the other build instead of using the one from the current MsBuild install.
 
 ## Commands
 The batch files are used to interact with tests:

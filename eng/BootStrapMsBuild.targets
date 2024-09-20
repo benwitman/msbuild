@@ -65,10 +65,10 @@
   </Target>
 
   <Target Name="BootstrapFull" DependsOnTargets="CleanBootstrapFolder;SetBinPaths;GatherNuGetDependencies">
-    <ItemGroup Condition="'$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' != ''">
-      <SdkResolverFiles Include="$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)\**\*.*" />
+    <ItemGroup Condition="'$(BOOTSTRAP_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' != ''">
+      <SdkResolverFiles Include="$(BOOTSTRAP_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)\**\*.*" />
     </ItemGroup>
-    <ItemGroup Condition="'$(MSBUILD_ISOLATED)' == '' AND '$(MSBUILD_CUSTOM_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' == ''">
+    <ItemGroup Condition="'$(MSBUILD_ISOLATED)' == '' AND '$(BOOTSTRAP_MICROSOFT_DOTNET_MSBUILDSDKRESOLVER)' == ''">
       <SdkResolverFiles Include="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\**\*.*" />
     </ItemGroup>
     <ItemGroup Condition="'$(MSBUILD_ISOLATED)' == ''">
