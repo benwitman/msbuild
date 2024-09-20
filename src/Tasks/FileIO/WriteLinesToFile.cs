@@ -16,7 +16,7 @@ namespace Microsoft.Build.Tasks
     /// <summary>
     /// Appends a list of items to a file. One item per line with carriage returns in-between.
     /// </summary>
-    public class WriteLinesToFile : TaskExtension, IIncrementalTask
+    public class WriteLinesToFile : TaskExtension, IIncrementalTask, ITaskHybrid
     {
         // Default encoding taken from System.IO.WriteAllText()
         private static readonly Encoding s_defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
@@ -24,7 +24,9 @@ namespace Microsoft.Build.Tasks
         /// <summary>
         /// File to write lines to.
         /// </summary>
+        /// 
         [Required]
+        [Output]
         public ITaskItem File { get; set; }
 
         /// <summary>
@@ -58,6 +60,10 @@ namespace Microsoft.Build.Tasks
 
         [Obsolete]
         public bool CanBeIncremental => WriteOnlyWhenDifferent;
+
+        public string[] DefaultInputProperties => Array.Empty<string>();
+
+        public string[] DefaultOutputProperties => new[] { "File" };
 
         /// <summary>
         /// Execute the task.
@@ -157,5 +163,7 @@ namespace Microsoft.Build.Tasks
 
             return success;
         }
+
+        public bool ExecuteStatic() => true;
     }
 }
