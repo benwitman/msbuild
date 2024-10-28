@@ -5,4 +5,5 @@
     <Nullable>enable</Nullable>
     <UseSharedCompilation>false</UseSharedCompilation>
   </PropertyGroup>
+  <UsingTaskPrecomputationMode TaskName="Microsoft.Build.Tasks.Git.LocateRepository" TaskMode="Static" />
 </Project>
