@@ -19,6 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.Build.BackEnd;
 using Microsoft.Build.Collections;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Eventing;
@@ -1558,9 +1559,10 @@ namespace Microsoft.Build.CommandLine
                             BuildRequestData buildRequest = null;
                             BuildRequestDataFlags precomputeFlags = BuildRequestDataFlags.None;
 
+                            StaticGraphBuilder staticGraphBuilder = null;
                             if (Environment.GetEnvironmentVariable("MSBUILDSTATIC") == "1")
                             {
-                                precomputeFlags |= BuildRequestDataFlags.PrecomputeMode;
+                                staticGraphBuilder = new StaticGraphBuilder();
                             }
 
                             if (!restoreOnly)
@@ -1579,13 +1581,13 @@ namespace Microsoft.Build.CommandLine
                                 }
                                 else
                                 {
-                                    buildRequest = new BuildRequestData(projectFile, globalProperties, toolsVersion, targets, null, flags);
+                                    buildRequest = new BuildRequestData(projectFile, globalProperties, toolsVersion, targets, null, flags) { StaticGraphBuilder = staticGraphBuilder };
                                 }
                             }
 
                             if (enableRestore || restoreOnly)
                             {
-                                result = ExecuteRestore(projectFile, toolsVersion, buildManager, restoreProperties.Count > 0 ? restoreProperties : globalProperties, saveProjectResult: saveProjectResult, precomputeFlags: precomputeFlags);
+                                result = ExecuteRestore(projectFile, toolsVersion, buildManager, restoreProperties.Count > 0 ? restoreProperties : globalProperties, saveProjectResult: saveProjectResult, staticGraphBuilder: staticGraphBuilder);
 
                                 if (result.OverallResult != BuildResultCode.Success)
                                 {
@@ -1625,15 +1627,15 @@ namespace Microsoft.Build.CommandLine
                                 {
                                     result = ExecuteBuild(buildManager, buildRequest);
                                     success = result.OverallResult == BuildResultCode.Success;
+                                }
+                            }
 
-                                    if (buildRequest.Flags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
-                                    {
-                                        var staticGraph = result.StaticGraph;
-                                        using (var stream = new FileStream(Environment.GetEnvironmentVariable("MSBUILDSTATIC_OUTPUT"), FileMode.Create, FileAccess.ReadWrite, FileShare.Read))
-                                        {
-                                            new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(BackEnd.StaticGraph)).WriteObject(stream, staticGraph);
-                                        }
-                                    }
+                            if (staticGraphBuilder != null)
+                            {
+                                var staticGraph = staticGraphBuilder.Finalize();
+                                using (var stream = new FileStream(Environment.GetEnvironmentVariable("MSBUILDSTATIC_OUTPUT"), FileMode.Create, FileAccess.ReadWrite, FileShare.Read))
+                                {
+                                    new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(BackEnd.StaticGraph)).WriteObject(stream, staticGraph);
                                 }
                             }
                         }
@@ -1827,7 +1829,7 @@ namespace Microsoft.Build.CommandLine
             return submission.Execute();
         }
 
-        private static BuildResult ExecuteRestore(string projectFile, string toolsVersion, BuildManager buildManager, Dictionary<string, string> globalProperties, BuildRequestDataFlags precomputeFlags, bool saveProjectResult = false)
+        private static BuildResult ExecuteRestore(string projectFile, string toolsVersion, BuildManager buildManager, Dictionary<string, string> globalProperties, StaticGraphBuilder staticGraphBuilder, bool saveProjectResult = false)
         {
             // Make a copy of the global properties
             Dictionary<string, string> restoreGlobalProperties = new Dictionary<string, string>(globalProperties);
@@ -1851,8 +1853,7 @@ namespace Microsoft.Build.CommandLine
                 BuildRequestDataFlags.ClearCachesAfterBuild |
                 BuildRequestDataFlags.SkipNonexistentTargets |
                 BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports |
-                BuildRequestDataFlags.FailOnUnresolvedSdk |
-                precomputeFlags;
+                BuildRequestDataFlags.FailOnUnresolvedSdk;
             if (saveProjectResult)
             {
                 flags |= BuildRequestDataFlags.ProvideProjectStateAfterBuild;
@@ -1864,7 +1865,8 @@ namespace Microsoft.Build.CommandLine
                 toolsVersion,
                 targetsToBuild: new[] { MSBuildConstants.RestoreTargetName },
                 hostServices: null,
-                flags: flags);
+                flags: flags)
+            { StaticGraphBuilder = staticGraphBuilder };
 
             return ExecuteBuild(buildManager, restoreRequest);
         }

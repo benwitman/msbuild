@@ -133,10 +133,6 @@ namespace Microsoft.Build.BackEnd
             {
                 StaticGraphBuilder = request.StaticGraphBuilder;
             }
-            else if (request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.PrecomputeMode))
-            {
-                StaticGraphBuilder = new StaticGraphBuilder();
-            }
 
             GlobalLock = new Object();
             Request = request;

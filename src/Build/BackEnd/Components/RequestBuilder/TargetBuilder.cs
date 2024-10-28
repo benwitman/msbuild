@@ -185,7 +185,7 @@ namespace Microsoft.Build.BackEnd
 
             // Gather up outputs for the requested targets and return those.  All of our information should be in the base lookup now.
             ComputeAfterTargetFailures(targetNames);
-            BuildResult resultsToReport = new BuildResult(_buildResult, targetNames, _requestEntry.Request.StaticGraphBuilder == null ? _requestEntry.StaticGraphBuilder?.Finalize() : null);
+            BuildResult resultsToReport = new BuildResult(_buildResult, targetNames);
 
             // Return after-build project state if requested.
             if (_requestEntry.Request.BuildRequestDataFlags.HasFlag(BuildRequestDataFlags.ProvideProjectStateAfterBuild))

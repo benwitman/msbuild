@@ -1787,7 +1787,8 @@ namespace Microsoft.Build.Execution
                 parentRequest: null,
                 submission.BuildRequestData.Flags,
                 submission.BuildRequestData.RequestedProjectState,
-                projectContextId: projectContextId);
+                projectContextId: projectContextId,
+                staticGraphBuilder: submission.BuildRequestData.StaticGraphBuilder);
         }
 
         private static void AddProxyBuildRequestToSubmission(
@@ -1804,7 +1805,8 @@ namespace Microsoft.Build.Execution
                 submission.BuildRequestData.HostServices,
                 submission.BuildRequestData.Flags,
                 submission.BuildRequestData.RequestedProjectState,
-                projectContextId);
+                projectContextId,
+                submission.BuildRequestData.StaticGraphBuilder);
         }
 
         /// <summary>

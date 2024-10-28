@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Build.BackEnd;
 using Microsoft.Build.Collections;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Shared;
@@ -83,12 +84,7 @@ namespace Microsoft.Build.Execution
         /// change the <see cref="IgnoreMissingEmptyAndInvalidImports" /> behavior to still fail when an SDK is missing
         /// because those are more fatal.
         /// </summary>
-        FailOnUnresolvedSdk = 1 << 7,
-
-        /// <summary>
-        /// PrecomputeMode
-        /// </summary>
-        PrecomputeMode = 1 << 8,
+        FailOnUnresolvedSdk = 1 << 7
     }
 
     /// <summary>
@@ -245,6 +241,8 @@ namespace Microsoft.Build.Execution
             TargetNames = new List<string>(targetsToBuild);
             Flags = flags;
         }
+
+        public StaticGraphBuilder StaticGraphBuilder;
 
         /// <summary>
         /// The actual project, in the case where the project doesn't come from disk.

@@ -111,7 +111,8 @@ namespace Microsoft.Build.BackEnd
             HostServices hostServices,
             BuildRequestDataFlags buildRequestDataFlags,
             RequestedProjectState requestedProjectState,
-            int projectContextId)
+            int projectContextId,
+            StaticGraphBuilder staticGraphBuilder)
         {
             _submissionId = submissionId;
             _configurationId = configurationId;
@@ -124,6 +125,7 @@ namespace Microsoft.Build.BackEnd
             _nodeRequestId = nodeRequestId;
             _buildRequestDataFlags = buildRequestDataFlags;
             _requestedProjectState = requestedProjectState;
+            _staticGraphBuilder = staticGraphBuilder;
 
             if (_requestedProjectState != null)
             {
@@ -150,8 +152,9 @@ namespace Microsoft.Build.BackEnd
             HostServices hostServices,
             BuildRequestDataFlags buildRequestDataFlags = BuildRequestDataFlags.None,
             RequestedProjectState requestedProjectState = null,
-            int projectContextId = BuildEventContext.InvalidProjectContextId)
-            : this(submissionId, nodeRequestId, configurationId, hostServices, buildRequestDataFlags, requestedProjectState, projectContextId)
+            int projectContextId = BuildEventContext.InvalidProjectContextId,
+            StaticGraphBuilder staticGraphBuilder = null)
+            : this(submissionId, nodeRequestId, configurationId, hostServices, buildRequestDataFlags, requestedProjectState, projectContextId, staticGraphBuilder)
         {
             _proxyTargets = proxyTargets;
             _targets = proxyTargets.ProxyTargetToRealTargetMap.Keys.ToList();
@@ -188,7 +191,7 @@ namespace Microsoft.Build.BackEnd
             bool skipStaticGraphIsolationConstraints = false,
             int projectContextId = BuildEventContext.InvalidProjectContextId,
             StaticGraphBuilder staticGraphBuilder = null)
-        : this(submissionId, nodeRequestId, configurationId, hostServices, buildRequestDataFlags, requestedProjectState, projectContextId)
+        : this(submissionId, nodeRequestId, configurationId, hostServices, buildRequestDataFlags, requestedProjectState, projectContextId, staticGraphBuilder)
         {
             ErrorUtilities.VerifyThrowArgumentNull(escapedTargets, "targets");
             ErrorUtilities.VerifyThrowArgumentNull(parentBuildEventContext, nameof(parentBuildEventContext));
@@ -200,7 +203,6 @@ namespace Microsoft.Build.BackEnd
                 _targets.Add(EscapingUtilities.UnescapeAll(target));
             }
 
-            _staticGraphBuilder = staticGraphBuilder;
             _parentBuildEventContext = parentBuildEventContext;
             _parentGlobalRequestId = parentRequest?.GlobalRequestId ?? InvalidGlobalRequestId;
 
